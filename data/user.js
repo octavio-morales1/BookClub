@@ -78,4 +78,4 @@ try {
     console.log(e)
 }
 
-export {createUser, getAllUsers};
+export {createUser, getAllUsers, getUser};
