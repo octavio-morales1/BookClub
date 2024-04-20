@@ -15,3 +15,4 @@ const getCollectionFn = (collection) => {
 
 export const users = getCollectionFn('users');
 export const books = getCollectionFn('books');
+export const books_clubs = getCollectionFn('book_clubs');

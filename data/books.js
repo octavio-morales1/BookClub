@@ -1,16 +1,18 @@
 import axios from 'axios'; 
-
 import {ObjectId} from 'mongodb';
 import {books} from '../config/mongoCollections.js';
+import * as mongoCollections from '../config/mongoCollections.js';
+const bookCollection = await mongoCollections.books();
+
 
 const CLEAN = (paragraph) => {
-    if (!paragraph) return ''; // Return an empty string if the input is falsy
+    if (!paragraph) return ''; 
   
     return paragraph
       .replace(/\[.*?\]|\(.*?\)|\{.*?\}|https?:\/\/(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+/g, '')
       .replace(/[-\r\n|\r|\n]|:/g, '')
       .replace(/\*\*Contains\*\*.*?/g, '');
-  };
+};
 
 function PAGE_SECTION(page) {
     let increment = 25 * ((page - 1) % 4 + 1);
@@ -28,44 +30,45 @@ const GET_AUTHOR_DATA = async(key) => {
         const response = await axios.get(`https://openlibrary.org${key}.json`);
         const author = response.data
         return {author_key: key, name : author.name, img: author.photos? author.photos[0] : null}
-    } catch {
-        throw error ? error : `Failled to retrieve book data ${key}`
+    } catch (error){
+        throw error ? error : `Failed to retrieve book data ${key}`
     }
 } 
 
-// const ITERATE_THROUGH_AUTHORS = async(authors) => {
-//     if (!authors) return null
-//     try {
-//         const author_keys = authors.map((author) => author.author)
-//         const author_data = [];
-//         for (const key of author_keys) {
-//             const author = await GET_AUTHOR_DATA(key.key);
-//             author_data.push(author);
-//         }
-//         return author_data
-//     } catch (error) {
-//         error
-//     }
-// }
 
 const ITERATE_THROUGH_AUTHORS = async (authors) => {
-    if (!authors) return null;
+    if (!authors) return [];
     try {
-        const author_keys = authors.map((author) => author.author);
+        const author_keys = authors.flatMap((author) => {
+            if (author.type && author.type.key === '/type/author_role' && author.author && author.author.key) {
+            return author.author.key;
+            }
+            return [];
+        });
         const author_data = [];
         for (const key of author_keys) {
-            const author = await GET_AUTHOR_DATA(key.key);
+            const author = await GET_AUTHOR_DATA(key);
             author_data.push(author);
         }
+        
         return author_data;
     } catch (error) {
-        throw error; // Throw the error instead of just logging it
+        throw error;
     }
 };
 
+const IS_EXIST_BOOK = async(key) => {
+    if (typeof key !== 'string' || key.trim().length === 0) throw 'Invalid book key';
+    try {
+        const response = await axios.get(`https://openlibrary.org${key}.json`);
+        return response.data.error? true: false
+    } catch (error){
+        throw error
+    }
+}
+
 const CREATE_BOOK_DATA = async(key) => {
     if (typeof key !== 'string' || key.trim().length === 0) throw 'Invalid book key';
-    const bookCollection = await books();
     try {
         const response = await axios.get(`https://openlibrary.org${key}.json`);
         const book = response.data
@@ -73,7 +76,7 @@ const CREATE_BOOK_DATA = async(key) => {
         const bookobj = {
             _id: key,
             title: book.title,
-            author: book.authors ? await ITERATE_THROUGH_AUTHORS(book.authors) : null,
+            author: book.authors ? await ITERATE_THROUGH_AUTHORS(book.authors) : [],
             publishedDate: book.created ? new Date(book.created.value).toLocaleDateString('en-US', options) : null,
             synopsis: book.description ? CLEAN(book.description.text) : null,
             ratings: [],
@@ -93,7 +96,6 @@ const CREATE_BOOK_DATA = async(key) => {
 
 const BOOK_SEARCH_BY_KEY = async(key) => {
     if (!key || typeof key !== 'string' || key.trim() === "") throw 'Error: id does not exist or is not a valid string'
-    const bookCollection = await books();
     let book = await bookCollection.findOne({ _id: key });
     if (book === null) {
         book = await CREATE_BOOK_DATA(key)
@@ -111,7 +113,14 @@ const BOOK_SEARCH = async (title, site_page = 1) => {
 
     try {
         const response = await axios.get(url);
-        const books_keys = response.data['docs'].map((book) => book.key)
+        const books = response.data['docs']
+
+        if (!books || books.length === 0) {
+            return []; 
+        }
+
+        
+        const books_keys = books.map((book) => book.key)
         const bookDetails = [];
         for (const key of books_keys) {
             const bookData = await BOOK_SEARCH_BY_KEY(key);
@@ -124,5 +133,4 @@ const BOOK_SEARCH = async (title, site_page = 1) => {
 }
 
 
-const results = await BOOK_SEARCH("The lord of the rings", 1)
-console.log(results)
+export { BOOK_SEARCH, BOOK_SEARCH_BY_KEY, CREATE_BOOK_DATA, IS_EXIST_BOOK };
