@@ -93,12 +93,11 @@ const UPDATE_BOOK_CLUB_CURRENT_BOOK = async(book_id, book_club_id) => {
 
 
 const DELETE_BOOK_CLUB = async(book_club_id) => {
-    if (!user_id || typeof user_id !== 'string' || user_id.trim() === "") throw 'Error: user id does not exist or is not a valid string'
     if (!book_club_id || typeof book_club_id !== 'string' || book_club_id.trim() === "") throw 'Error: book club id does not exist or is not a valid string'
     
     let book_club = await GET_BOOK_CLUB_BY_ID(book_club_id)
     const filter = { _id: new ObjectId(book_club_id) };
-    const result = await collection.deleteOne(filter);
+    const result = await bookClubCollection.deleteOne(filter);
     if (result.modifiedCount == 0) throw "Error: Joining Book Failed"
     return book_club
 }

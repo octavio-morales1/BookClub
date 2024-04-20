@@ -12,7 +12,8 @@ try {
     await BOOK_SEARCH("Lion King", 1)
     const book_club1 = await CREATE_BOOK_CLUB(user1._id.toString(), "Book Club1", "Testing Testing Testing", "Every Friday", "/works/OL27448W");
     await JOIN_BOOK_CLUB(user1._id.toString(), book_club1._id.toString())
-    await 
+    await DELETE_BOOK_CLUB(book_club1._id.toString())
+
     console.log("Success")
 } catch(e) {
     console.log(e)
