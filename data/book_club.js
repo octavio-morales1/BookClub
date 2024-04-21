@@ -34,7 +34,7 @@ const CREATE_BOOK_CLUB = async(user_id, name, description, meeting, currentBook_
     const book_club = {
         _id: new ObjectId(),
         name:name,
-        creator: creator,
+        moderator: creator,
         description:description,
         meeting:meeting,
         currentBook: book,
@@ -93,13 +93,35 @@ const UPDATE_BOOK_CLUB_CURRENT_BOOK = async(book_id, book_club_id) => {
 
 
 const DELETE_BOOK_CLUB = async(book_club_id) => {
-    if (!book_club_id || typeof book_club_id !== 'string' || book_club_id.trim() === "") throw 'Error: book club id does not exist or is not a valid string'
+    if (!book_club_id || typeof book_club_id !== 'string' || book_club_id.trim() === "") throw 'Error: id is not a valid string'
+    if (!IS_EXIST_BOOK_CLUB(book_club_id)) throw "Error: book id does not exist"
     
     let book_club = await GET_BOOK_CLUB_BY_ID(book_club_id)
     const filter = { _id: new ObjectId(book_club_id) };
     const result = await bookClubCollection.deleteOne(filter);
-    if (result.modifiedCount == 0) throw "Error: Joining Book Failed"
-    return book_club
+    if (result.modifiedCount == 0) throw "Error: Failed Book Failed"
+    return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
-export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB }
+const REMOVE_USER_FROM_BOOKCLUB = async(book_club_id, user_id) => {
+    if (!book_club_id || typeof book_club_id !== 'string' || book_club_id.trim() === "") throw 'Error: book club id does not exist or is not a valid string'
+    if (!user_id || typeof user_id !== 'string' || user_id.trim() === "") throw 'Error: user id does not exist or is not a valid string'
+    
+    let book_club = await GET_BOOK_CLUB_BY_ID(book_club_id)
+    const user = await GET_USER_BY_ID(user_id)
+    const filter = { _id: new ObjectId(book_club_id) };
+
+    if(user._id == book_club.moderator._id.toString()){
+        const new_moderator = book_club.members[1]
+        const update_moderator = { $set: {moderator: new_moderator}}
+        const result1 = await bookClubCollection.updateOne(filter, update_moderator)
+        if (result1.modifiedCount == 0) throw "Error: failed to update moderator"
+    }
+
+    const update = { $pull: {members: { _id: new ObjectId(user_id)}}}
+    const result = await bookClubCollection.updateOne(filter, update);
+    if (result.modifiedCount == 0) throw "Error: failed to remove user"
+    return await GET_BOOK_CLUB_BY_ID(book_club_id)
+}
+
+export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB }
