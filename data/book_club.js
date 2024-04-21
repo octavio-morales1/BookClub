@@ -1,10 +1,11 @@
-import { BOOK_SEARCH_BY_KEY, IS_EXIST_BOOK} from './books.js'
-import { IS_EXIST_USER, GET_USER_BY_ID } from './user.js';
 import { ObjectId } from 'mongodb';
 import * as mongoCollections from '../config/mongoCollections.js';
 
+import { BOOK_SEARCH_BY_KEY, IS_EXIST_BOOK} from './books.js'
+import { IS_EXIST_USER, GET_USER_BY_ID } from './user.js';
+import { ObjectId } from 'mongodb';
+
 const userCollection = await mongoCollections.users();
-const bookCollection = await mongoCollections.books();
 const bookClubCollection = await mongoCollections.books_clubs();
 
 const IS_EXIST_BOOK_CLUB = async(id) => {
@@ -70,7 +71,6 @@ const JOIN_BOOK_CLUB = async(user_id, book_club_id) => {
     const update_for_user = { $set: { bookClubsJoined: user.bookClubsJoined ? [...user.bookClubsJoined, book_club] : [book_club]} };
     const result_for_user = await userCollection.updateOne(filter_for_user, update_for_user);
     if (result_for_user.modifiedCount == 0) throw "Error: appending book club failed"
-
     return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
@@ -117,7 +117,6 @@ const REMOVE_USER_FROM_BOOKCLUB = async(book_club_id, user_id) => {
         const result1 = await bookClubCollection.updateOne(filter, update_moderator)
         if (result1.modifiedCount == 0) throw "Error: failed to update moderator"
     }
-
     const update = { $pull: {members: { _id: new ObjectId(user_id)}}}
     const result = await bookClubCollection.updateOne(filter, update);
     if (result.modifiedCount == 0) throw "Error: failed to remove user"
