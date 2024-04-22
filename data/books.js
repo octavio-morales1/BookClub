@@ -1,11 +1,11 @@
 import axios from 'axios'; 
 import * as mongoCollections from '../config/mongoCollections.js';
 const bookCollection = await mongoCollections.books();
+const RESULTS_PER_PAGE = 5;
 
 
 const CLEAN = (paragraph) => {
     if (!paragraph) return ''; 
-  
     return paragraph
       .replace(/\[.*?\]|\(.*?\)|\{.*?\}|https?:\/\/(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+/g, '')
       .replace(/[-\r\n|\r|\n]|:/g, '')
@@ -101,34 +101,25 @@ const BOOK_SEARCH_BY_KEY = async(key) => {
     return book
 }
 
-const BOOK_SEARCH = async (title, site_page = 1) => {
-    if (typeof title !== 'string' || title.trim().length === 0) throw 'Error: Invalid title';
-    if (typeof site_page !== 'number' || site_page <= 0) throw 'Error: Invalid page number';
-    const {section, page} = PAGE_SECTION(site_page)
-
-    const encodedTitle = title.trim().replace(/ /g, '+').replace(/!$/, '');
-    const url = `https://openlibrary.org/search.json?q=${encodedTitle}&page=${page}`;
-
+const BOOK_SEARCH = async (title, site_page = 0) => {
+    if (typeof title !== 'string' || title.trim().length === 0) return 'Error: Invalid title';
+    if (typeof site_page !== 'number' || site_page < 0) return 'Error: Invalid page number';
+  
+    const encodedTitle = encodeURIComponent(title.trim());
+    const url = `https://openlibrary.org/search.json?q=${encodedTitle}&offset=${site_page * RESULTS_PER_PAGE}&limit=${RESULTS_PER_PAGE}`;
+  
+    const response = await axios.get(url);
+    const books = response.data['docs'] || [];
+  
+    const books_keys = books.map(book => book.key);
+    const bookDetailsPromises = books_keys.map(key => BOOK_SEARCH_BY_KEY(key));
+  
     try {
-        const response = await axios.get(url);
-        const books = response.data['docs']
-
-        if (!books || books.length === 0) {
-            return []; 
-        }
-
-        
-        const books_keys = books.map((book) => book.key)
-        const bookDetails = [];
-        for (const key of books_keys) {
-            const bookData = await BOOK_SEARCH_BY_KEY(key);
-            bookDetails.push(bookData);
-        }
-        return bookDetails;
+      const bookDetails = await Promise.all(bookDetailsPromises);
+      return bookDetails;
     } catch (error) {
-        throw `Failed to fetch data: ${error}`;
+      throw `Failed to fetch data: ${error}`;
     }
-}
-
+  };
 
 export { BOOK_SEARCH, BOOK_SEARCH_BY_KEY, CREATE_BOOK_DATA, IS_EXIST_BOOK };
