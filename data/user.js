@@ -50,16 +50,16 @@ const CREATE_USER = async(firstName, lastName, email, username, password) => {
 
     const user = {
         _id: new ObjectId(),
-        firstname:firstName,
-        lastname:lastName,
+        first_name:firstName,
+        last_name:lastName,
         email:email,
         username:username,
         password:passwordHash,
-        joinedDate:joinedDate,
-        readingList: [],
-        bookClubsJoined: [],
-        reviewsPosted: [],
-        Bookmarks: {
+        joined_date:joinedDate,
+        reading_list: [],
+        book_clubs: [],
+        reviews: [],
+        bookmarks: {
             clubs: [],
             events: [],
             books: []
