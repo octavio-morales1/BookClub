@@ -3,22 +3,7 @@ import { ObjectId } from 'mongodb';
 import * as mongoCollections from '../config/mongoCollections.js';
 const userCollection = await mongoCollections.users();
 
-
 const saltRounds = 10; // Define the number of salt rounds
-
-const HASHPASSWORD = async(password) => {
-    try {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      return hashedPassword;
-    } catch (error) {
-      throw new Error('Error hashing password');
-    }
-}
-
-const IS_VALID_EMAIL = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
 
 const GET_ALL_USERS = async() => {
     return await userCollection.find({}).toArray();
@@ -30,7 +15,6 @@ const GET_USER_BY_ID = async(id) => {
     return await userCollection.findOne({ _id: new ObjectId(id) });
 }
 
-
 const IS_EXIST_USER = async(id) => {
     if (!id || typeof id !== 'string' || id.trim() === "") throw 'Error: id does not exist or is not a valid string'
     const user = await userCollection.findOne({ _id: new ObjectId(id) });
@@ -38,24 +22,32 @@ const IS_EXIST_USER = async(id) => {
     return true;
 }
 
-const CREATE_USER = async(firstName, lastName, email, username, password) => {
-    if (typeof firstName !== 'string' || firstName.trim().length === 0) throw new Error('Invalid first name')
-    if (typeof lastName !== 'string' || lastName.trim().length === 0) throw new Error('Invalid last name')
-    if (typeof email !== 'string' || !IS_VALID_EMAIL(email)) throw new Error('Invalid email')
-    if (typeof username !== 'string' || username.trim().length === 0) throw new Error('Invalid username')
-    if (typeof password !== 'string' || password.trim().length < 8) throw new Error('Invalid password (must be at least 8 characters)')
-  
+const CREATE_USER = async(first_name, last_name, email, username, password) => {
+    if (!first_name || !last_name || !email || !username || !password) throw 'All fields must be provided';
+    if (!/^[a-zA-Z]{2,25}$/.test(first_name)) throw 'Invalid first name. It should be a valid string (no strings with just spaces, should not contain numbers) and should be at least 2 characters long with a max of 25 characters.'
+    if (!/^[a-zA-Z]{2,25}$/.test(last_name)) throw 'Invalid last name. It should be a valid string (no strings with just spaces, should not contain numbers) and should be at least 2 characters long with a max of 25 characters.'
+    if (!/^[a-zA-Z]{3,10}$/.test(username)) throw 'Invalid username. It should be a valid string (no strings with just spaces, should not contain numbers) and should be at least 3 characters long with a max of 10 characters.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw 'Invalid email'
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) throw 'Invalid password. Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character.'
+    
+    first_name = first_name.title()
+    last_name = last_name.title()
+    username = username.toLowerCase()
+    email = email.toLowerCase()
+
+
     const passwordHash = await HASHPASSWORD(password);
     const joinedDate = new Date().toISOString().slice(0, 10);
 
     const user = {
         _id: new ObjectId(),
-        first_name:firstName,
-        last_name:lastName,
-        email:email,
-        username:username,
-        password:passwordHash,
-        joined_date:joinedDate,
+        first_name: first_name,
+        last_name: last_name,
+        email: email,
+        username: username,
+        password: await bcrypt.hash(password, saltRounds),
+        joined_date: joinedDate,
         reading_list: [],
         book_clubs: [],
         reviews: [],
@@ -66,13 +58,36 @@ const CREATE_USER = async(firstName, lastName, email, username, password) => {
         }
     };
 
-    const users = await GET_ALL_USERS()
-    const usersByUsername = users.map(user => user.username);
-    if (usersByUsername.find(element => element === username)) throw "Error: Username is already taken"
+    const taken_username = await userCollection.findOne({username: username})
+    if (!taken_username) throw "Error: Username is already taken"
 
     const newInsertInformation = await userCollection.insertOne(user);
     if (!newInsertInformation.insertedId) throw 'Error: Insert failed!';
     return user;
 }
 
+const LOGIN_IN = async (email, password) => {
+    if (!email || !password) throw 'All fields must be provided';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw 'Invalid email'
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) throw 'Invalid password. Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character.'
+
+    email = email.toLowerCase()
+
+    const users = await userCollection.find({email: email}).toArray()
+    if (!users) throw "Either the email or password is invalid"
+
+    let user = null
+    for (let user_email of users) {
+        const match = await bcrypt.compare(password, user_email.password);
+        if (match) {
+            user = user_email
+            break
+        }
+      }
+      
+
+    const {first_name, last_name, username, joined_date } = user;
+    return await bcrpyt.compare(password, user.password) ? {firstName, lastName, username, favoriteQuote, themePreference, role} : "Either the username or password is invalid"
+} 
 export {CREATE_USER, GET_ALL_USERS, GET_USER_BY_ID, IS_EXIST_USER};
