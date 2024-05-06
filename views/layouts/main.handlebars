@@ -1,0 +1,50 @@
+{{! This will be your default layout for all handlebars file rendered. This will be inherited by all other templates. }}
+{{! Refer lecture code to learn more on how this works
+don't forget to include your css and your client-side script file references in the layout.
+for the theme, you can simply read the themePreference for the user and inject it into the body element}}
+{{! <body class="{{themePreference}}
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/public/css/styles.css" type="text/css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Book Club Network</h1>
+            <nav>
+                <ul>
+                    {{#if user}}
+                        <li><a href="/user/{{user._id}}">Profile</a></li>
+                        <li><a href="/bookclubs">Book Clubs</a></li>
+                        <li><a href="/logout">Logout</a></li>
+                    {{else}}
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/register">Register</a></li>
+                    {{/if}}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        {{#if error}}
+            <div class="error-message">
+                <p>Error: {{error}}</p>
+            </div>
+        {{/if}}
+        {{{body}}}
+    </div>
+
+    <footer>
+        <p>{{year}} Book Club Network by Allan and Octavio</p>
+    </footer>
+</body>
+</html>
+

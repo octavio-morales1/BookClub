@@ -1,0 +1,12 @@
+
+
+<h2>Book Clubs</h2>
+{{#each bookClubs}}
+    <div class="book-club">
+        <h3>{{this.name}}</h3>
+        <p>{{this.description}}</p>
+        <a href="/bookclubs/{{this._id}}">View Club</a>
+    </div>
+{{else}}
+    <p>No book clubs found. Consider starting one!</p>
+{{/each}}

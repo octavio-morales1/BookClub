@@ -1,0 +1,22 @@
+
+
+<h1>{{bookClub.name}}</h1>
+
+<div class="book-info">
+    {{#if bookClub.currentBook.img}}
+    <img src="{{bookClub.currentBook.img}}" alt="{{bookClub.currentBook.title}}" width="150" height="225">
+    {{/if}}
+    <h2>{{bookClub.currentBook.title}}</h2>
+    <p>by {{joinAuthors bookClub.currentBook.author}}</p>
+</div>
+
+<h2>Discussions</h2>
+<div class="discussion-list">
+    {{#each bookClub.discussions}}
+    <div class="discussion-card">
+        <h3>{{title}}</h3>
+        <p>{{content}}</p>
+        <a href="/bookclubs/{{../bookClub._id}}/discussions/{{_id}}">View Comments</a>
+    </div>
+    {{/each}}
+</div>
