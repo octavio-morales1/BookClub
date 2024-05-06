@@ -90,4 +90,4 @@ const LOGIN_IN = async (email, password) => {
     const {first_name, last_name, username, joined_date } = user;
     return await bcrpyt.compare(password, user.password) ? {firstName, lastName, username, favoriteQuote, themePreference, role} : "Either the username or password is invalid"
 } 
-export {CREATE_USER, GET_ALL_USERS, GET_USER_BY_ID, IS_EXIST_USER};
+export {CREATE_USER, GET_ALL_USERS, GET_USER_BY_ID, IS_EXIST_USER, LOGIN_IN};

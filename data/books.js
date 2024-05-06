@@ -4,6 +4,11 @@ const bookCollection = await mongoCollections.books();
 const RESULTS_PER_PAGE = 5;
 
 
+const CONCATNATE_NAMES = (authors) => {
+    let names = authors.map(author => author.name);
+    return names.join(', ');
+}
+
 const CLEAN = (paragraph) => {
     if (!paragraph) return ''; 
     return paragraph
@@ -74,7 +79,7 @@ const CREATE_BOOK_DATA = async(key) => {
         const bookobj = {
             _id: key,
             title: book.title,
-            author: book.authors ? await ITERATE_THROUGH_AUTHORS(book.authors) : [],
+            author: book.authors ? CONCATNATE_NAMES(await ITERATE_THROUGH_AUTHORS(book.authors)) : "",
             publishedDate: book.created ? new Date(book.created.value).toLocaleDateString('en-US', options) : null,
             synopsis: book.description ? CLEAN(book.description.text) : null,
             ratings: [],
@@ -82,7 +87,6 @@ const CREATE_BOOK_DATA = async(key) => {
             genre: book.subject? book.subject : [],
             img: book.covers ? `https://covers.openlibrary.org/b/id/${book.covers[0]}-M.jpg`: null
         }
-
         const newInsertInformation = await bookCollection.insertOne(bookobj);
         if (!newInsertInformation.insertedId) throw 'Error: Insert failed!';
         return bookobj

@@ -2,6 +2,7 @@ import * as mongoCollections from '../config/mongoCollections.js';
 
 import { BOOK_SEARCH_BY_KEY, IS_EXIST_BOOK} from './books.js'
 import { IS_EXIST_USER, GET_USER_BY_ID } from './user.js';
+import { createDiscussion, updateDiscussionStatus} from './discussions.js';
 import { ObjectId } from 'mongodb';
 
 const userCollection = await mongoCollections.users();
@@ -33,22 +34,25 @@ const CREATE_BOOK_CLUB = async(user_id, name, description, meeting, currentBook_
 
     const book_club = {
         _id: new ObjectId(),
-        name:name,
+        name: name,
         moderator: creator,
-        description:description,
-        meeting:meeting,
+        description: description,
+        meeting: meeting,
         currentBook: book,
         members: [creator],
-        discussions: []
-    }
+        discussions: [] 
+    };
 
     const newInsertInformation = await bookClubCollection.insertOne(book_club);
     if (!newInsertInformation.insertedId) throw 'Error: Insert failed!';
 
-    const filter_for_user = { _id: new ObjectId(user_id) };
-    const update_for_user = { $set: { bookClubsJoined: creator.bookClubsJoined ? [...creator.bookClubsJoined, book_club] : [book_club]} };
-    const result_for_user = await userCollection.updateOne(filter_for_user, update_for_user);
-    if (result_for_user.modifiedCount == 0) throw "Error: appending book club failed"
+    const initialDiscussion = await createDiscussion(book_club._id, book._id, book.title, book.author);
+    book_club.discussions.push(initialDiscussion);
+
+    await bookClubCollection.updateOne(
+        { _id: book_club._id },
+        { $set: { discussions: book_club.discussions } }
+    );
 
     return book_club
 }
@@ -90,6 +94,52 @@ const UPDATE_BOOK_CLUB_CURRENT_BOOK = async(book_id, book_club_id) => {
     return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
+const START_NEW_SESSION = async (bookClubId, newBookKey) => {
+    // Validate book ID and check existence
+    if (!book_id || typeof book_id !== 'string' || book_id.trim() === "") throw 'Error: user id does not exist or is not a valid string'
+    if (!newBookKey || typeof newBookKey !== 'string' || key.trim().newBookKey === 0) throw 'Invalid book key';
+    if (!ObjectId.isValid(bookClubId) || !await BOOK_SEARCH_BY_KEY(newBookKey)) throw 'Invalid book club ID or book key'
+
+    // Create a new discussion for the new session
+    let book_club = await GET_BOOK_CLUB_BY_ID(book_club_id)
+    const newDiscussion = await createDiscussion(bookClubId, newSessionBook._id, newSessionBook.title, newSessionBook.author);
+
+    const updateResult = await bookClubCollection.updateOne(
+        { _id: new ObjectId(bookClubId) },
+        {
+            $set: {
+                currentBook: newSessionBook,
+                moderator: newModerator,
+            },
+            $push: {
+                moderatorsHistory: newModerator,
+                discussions: newDiscussion
+            }
+        }
+    );
+
+    if (updateResult.modifiedCount === 0) throw new Error('Failed to start a new session');
+    return await bookClubCollection.findOne({ _id: new ObjectId(bookClubId) });
+
+};
+
+
+
+const END_CURRENT_SESSION = async (moderatorId, bookClubId) => {
+    if (!await IS_EXIST_BOOK_CLUB(bookClubId)) throw 'Book club does not exist';
+    const bookClub = await GET_BOOK_CLUB_BY_ID(bookClubId);
+    if (bookClub.moderator._id.toString() !== moderatorId) throw 'Only the moderator can end the session';
+
+    // Mark the current discussion as closed
+    const currentDiscussion = bookClub.discussions.find(d => d.status === 'active');
+    if (!currentDiscussion) throw 'No active discussion to close';
+
+    await updateDiscussionStatus(currentDiscussion._id, 'closed');
+
+    return 'Session ended successfully';
+};
+
+
 
 const DELETE_BOOK_CLUB = async(book_club_id) => {
     if (!book_club_id || typeof book_club_id !== 'string' || book_club_id.trim() === "") throw 'Error: id is not a valid string'
@@ -99,7 +149,7 @@ const DELETE_BOOK_CLUB = async(book_club_id) => {
     const filter = { _id: new ObjectId(book_club_id) };
     const result = await bookClubCollection.deleteOne(filter);
     if (result.modifiedCount == 0) throw "Error: Failed Book Failed"
-    return await GET_BOOK_CLUB_BY_ID(book_club_id)
+    return
 }
 
 const REMOVE_USER_FROM_BOOKCLUB = async(book_club_id, user_id) => {
@@ -122,4 +172,4 @@ const REMOVE_USER_FROM_BOOKCLUB = async(book_club_id, user_id) => {
     return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
-export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB }
+export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, END_CURRENT_SESSION, START_NEW_SESSION}
