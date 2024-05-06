@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
     if (!req.session.user) {
       return res.redirect('/login');
     } else {
-      return res.redirect('/login');
+      return res.redirect(`/user/${req.session.user.username}`);
     }
 });
 
@@ -40,7 +40,7 @@ router.post('/register', async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res.status(400).render("register", { error: error });
+    return res.status(400).render("register", { error: error.toString() });
   }
 });
 
@@ -58,17 +58,18 @@ router.post('/login', async (req, res) => {
     return res.redirect(`/user/${req.session.user.username}`);
   } catch(error) {
     console.log(error)
-    return res.status(400).render("login", {error: error});
+    return res.status(400).render("login", {error: 'Invalid Username or Password'});
   }
 });
 
 // User profile route
 router.get('/user/:userId', (req, res) => {
-  return res.render("landingpage", {bookClubs : req.session.user.book_clubs})
-});
-
-router.post('/search', async (req, res) => {
-  return res.render("search")
+  try {
+    const user= userAPI.GET_USER_BY_ID(req.params.userId); //supposed to have await (come back to this later)
+    res.render("userinformation", { user: user });  // Assume you have a userinformation.handlebars
+  } catch (error) {
+      res.status(500).render("error", { error: "User not found" });
+  }
 });
 
 router.get('/search', async (req, res) => {
@@ -78,21 +79,57 @@ router.get('/search', async (req, res) => {
 
 router.post('/books/search', async (req, res) => {
   const searchTerm = req.body.searchBookByName.trim();
-  const booksData = await booksAPI.BOOK_SEARCH(searchTerm)
-
-  res.render("searchResults", {searchTerm: searchTerm, books:booksData})
+  try {
+      const books = await booksAPI.BOOK_SEARCH(searchTerm);
+      res.render("searchResults", { books });
+  } catch (error) {
+      res.status(500).render("error", { error: "Error searching books" });
+  }
 });
 
 // Display book details and reviews
-router.get('/book/works/:bookId', (req, res) => {
-// Fetch and display details of the specified book
-// Fetch and display reviews for the book
-// Render the form to post a new review
-  const bookId = '/works/' + req.params.bookId;
-  console.log("here")
-  const book = booksAPI.BOOK_SEARCH_BY_KEY(bookId)
-  return res.render("bookHomepage", {img: book.img, title: book.title, author:book.author, publishDate:book.publishDate, genre:book.genre, synopsis:book.synopsis})
+router.get('/book/:bookId', (req, res) => {
+  // Fetch and display details of the specified book
+  // Fetch and display reviews for the book
+  // Render the form to post a new review
+  try {
+    const book = booksAPI.BOOK_SEARCH_BY_KEY(req.params.bookId); //supposed to have await (come back to this later)
+    return res.render("bookHomepage", {img: book.img, title: book.title, author:book.author, publishDate:book.publishDate, genre:book.genre, synopsis:book.synopsis});  // Assume you have a bookHomepage.handlebars
+  } catch (error) {
+    res.status(500).render("error", { error: "Book not found" });
+    }
+  });
+
+  router.get('/bookclubs', async (req, res) => {
+    try {
+        const bookClubs = await bookClubAPI.GET_ALL_BOOK_CLUBS();
+        res.render('bookclubsHomepage', { bookClubs });  // Assume you have a bookclubsHomepage.handlebars
+    } catch (error) {
+        res.status(500).render("error", { error: "Failed to fetch book clubs" });
+    }
 });
+
+router.post('/bookclubs/create', async (req, res) => {
+  const { name, description, userId } = req.body;
+  try {
+      const bookClub = await bookClubAPI.CREATE_BOOK_CLUB(userId, name, description);
+      res.redirect(`/bookclubs/${bookClub._id}`);
+  } catch (error) {
+      res.status(500).render("error", { error: "Failed to create book club" });
+  }
+});
+
+router.post('/bookclubs/:bookClubId/join', async (req, res) => {
+  const bookClubId = req.params.bookClubId;
+  try {
+      await bookClubAPI.JOIN_BOOK_CLUB(req.session.user._id, bookClubId);
+      res.redirect(`/bookclubs/${bookClubId}`);
+  } catch (error) {
+      res.status(500).render("error", { error: "Failed to join book club" });
+  }
+});
+
+export default router;
 
 // router.post('/books/:bookId/reviews', (req, res) => {
 // // Handle posting a new review for the book
@@ -174,4 +211,3 @@ router.get('/book/works/:bookId', (req, res) => {
 //   });
 
 
-export default router;
