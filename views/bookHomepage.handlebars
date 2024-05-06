@@ -1,22 +1,24 @@
-
-
-<h1>{{bookClub.name}}</h1>
-
-<div class="book-info">
-    {{#if bookClub.currentBook.img}}
-    <img src="{{bookClub.currentBook.img}}" alt="{{bookClub.currentBook.title}}" width="150" height="225">
+<h1>Book Details</h1>
+<div class="book-card">
+    {{#if book.img}}
+    <img src="{{book.img}}" alt="{{book.title}}">
     {{/if}}
-    <h2>{{bookClub.currentBook.title}}</h2>
-    <p>by {{joinAuthors bookClub.currentBook.author}}</p>
-</div>
-
-<h2>Discussions</h2>
-<div class="discussion-list">
-    {{#each bookClub.discussions}}
-    <div class="discussion-card">
-        <h3>{{title}}</h3>
-        <p>{{content}}</p>
-        <a href="/bookclubs/{{../bookClub._id}}/discussions/{{_id}}">View Comments</a>
-    </div>
-    {{/each}}
+    <h3>{{book.title}}</h3>
+    {{#if book.author}}
+    <p>by {{ book.author}}</p>
+    {{/if}}
+    {{#if book.publishedDate}}
+    <p>Published: {{book.publishedDate}}</p>
+    {{/if}}
+    {{#if book.genre}}
+    <p>Genre: {{book.joinGenres genre}}</p>
+    {{/if}}
+    {{#if book.synopsis}}
+    <p>Synopsis: {{book.synopsis}}</p>
+    {{/if}}
+    <form action="/bookclubs" method="POST">
+        <input type="hidden" name="bookId" value="{{_id}}">
+        <input type="text" name="clubName" placeholder="Enter club name" required>
+        <button type="submit">Create Book Club</button>
+    </form>
 </div>
