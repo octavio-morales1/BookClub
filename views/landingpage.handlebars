@@ -1,0 +1,27 @@
+{{!--
+
+If the user is logged in , and 'GET /user' endpoint is called, you will render this view based on the specs.
+
+--}}
+
+<h1>Book Club Discussions</h1>
+
+{{#each bookClubs}}
+    <div class="discussion">
+        <h2>{{name}}</h2>
+        <p>Current Book: {{currentBook.title}} by {{currentBook.author}}</p>
+
+        {{#each discussions}}
+            <div class="thread">
+                <h3>{{title}}</h3>
+                <p>{{content}}</p>
+
+                {{#each comments}}
+                    <div class="comment">
+                        <p>{{text}}</p>
+                    </div>
+                {{/each}}
+            </div>
+        {{/each}}
+    </div>
+{{/each}}

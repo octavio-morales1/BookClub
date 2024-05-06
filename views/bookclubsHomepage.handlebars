@@ -1,0 +1,17 @@
+
+
+<h1>Book Clubs</h1>
+
+<div class="book-club-list">
+    {{#each bookClubs}}
+    <div class="book-club-card">
+        {{#if currentBook.img}}
+        <img src="{{currentBook.img}}" alt="{{currentBook.title}}">
+        {{/if}}
+        <h3>{{name}}</h3>
+        <p>Current Book: {{currentBook.title}}</p>
+        <p>by {{joinAuthors currentBook.author}}</p>
+        <a href="/bookclubs/{{_id}}">Visit Club</a>
+    </div>
+    {{/each}}
+</div>
