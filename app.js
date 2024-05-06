@@ -1,45 +1,92 @@
-import { 
-    CREATE_USER, 
-    GET_ALL_USERS, 
-    GET_USER_BY_ID
-} from './data/user.js'
+import * as userAPI from './data/user.js'
+
+import * as bookClubAPI from './data/book_club.js'
+
+import * as bookAPI from './data/books.js'
 
 import { 
-    IS_EXIST_BOOK_CLUB, 
-    GET_BOOK_CLUB_BY_ID, 
-    CREATE_BOOK_CLUB, 
-    JOIN_BOOK_CLUB, 
-    UPDATE_BOOK_CLUB_CURRENT_BOOK, 
-    DELETE_BOOK_CLUB, 
-    REMOVE_USER_FROM_BOOKCLUB
-} from './data/book_club.js'
+    CREATE_REVIEW, 
+    DELETE_REVIEW
+} from './data/reviews.js'
 
-import { 
-    BOOK_SEARCH, 
-    BOOK_SEARCH_BY_KEY, 
-    CREATE_BOOK_DATA, 
-    IS_EXIST_BOOK 
-} from './data/books.js'
+import session from 'express-session';
+import express from 'express';
+import path from 'path';
+const app = express();
+import configRoutes from './routes/index.js';
+import exphbs from 'express-handlebars';
 
 
-import { dbConnection, closeConnection } from './config/mongoConnection.js';
-const db = await dbConnection();
-await db.dropDatabase();
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+    
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-try {
-    const user1 = await CREATE_USER( 'Allan', 'Joseph', 'john.doe@example.com', 'johndoe', 'mySecurePassword123'); 
-    const user2 = await CREATE_USER( 'Birva', 'Patel', 'john.doe@example.com', 'johndoe1', 'mySecurePassword123'); 
-    const user3 = await CREATE_USER( 'Octavio', 'Moralas', 'john.doe@example.com', 'johndoe2', 'mySecurePassword123');
-    await BOOK_SEARCH("Lion King", 1)
-    const book_club1 = await CREATE_BOOK_CLUB(user1._id.toString(), "Book Club1", "Testing Testing Testing", "Every Friday", "/works/OL27448W");
-    console.log(user1.firstname)
-    await JOIN_BOOK_CLUB(user2._id.toString(), book_club1._id.toString())
-    await UPDATE_BOOK_CLUB_CURRENT_BOOK('/works/OL15450151W', book_club1._id.toString())
-    await REMOVE_USER_FROM_BOOKCLUB(book_club1._id.toString(), user1._id.toString())
-    //await DELETE_BOOK_CLUB(book_club1._id.toString())
+app.use(
+  session({
+    name: "AuthCookie",
+    secret: "This is a secret.. shhh don't tell anyone",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-    console.log("Success")
-} catch(e) {
-    console.log(e)
-}
-await closeConnection();
+const rewriteUnsupportedBrowserMethods = (req, res, next) => {
+  if (req.body && req.body._method) {
+    req.method = req.body._method;
+    delete req.body._method;
+  }
+
+  next();
+};
+
+app.set("view engine", "handlebars");
+app.use('/public', express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(rewriteUnsupportedBrowserMethods);
+app.use(express.static(path.join(__dirname, 'public'), { type: 'module' }));
+app.engine('handlebars', exphbs.engine({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toUTCString()}]: ${req.method} ${req.originalUrl} `);
+  next();
+});
+ 
+app.use("/login", (req, res, next) => {
+  if(req.session.user){
+    return res.redirect(`/user/${req.session.user.username}`);
+  }
+  next();
+})
+
+app.use("/register", (req, res, next) => {
+  if(req.session.user){
+    return res.redirect(`/user/${req.session.user.username}`);
+  }
+  next();
+})
+ 
+app.use("/user/:userId", (req, res, next) => {
+  if (!req.session.user) return res.redirect("/login")
+  next()
+});
+
+app.use("/user/:userId", (req, res, next) => {
+  if (req.session.user.book_clubs.length == 0) return res.redirect("/search")
+  next()
+});
+
+//  // Middleware 6
+app.use('/logout', (req, res, next) => {
+  if (!req.session.user) return res.redirect('/login');
+  next();
+});
+
+configRoutes(app);
+
+app.listen(3000, () => {
+  console.log("We've now got a server!");
+  console.log('Your routes will be running on http://localhost:3000');
+});

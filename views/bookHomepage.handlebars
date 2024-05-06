@@ -1,0 +1,24 @@
+<h1>Book Details</h1>
+<div class="book-card">
+    {{#if book.img}}
+    <img src="{{book.img}}" alt="{{book.title}}">
+    {{/if}}
+    <h3>{{book.title}}</h3>
+    {{#if book.author}}
+    <p>by {{ book.author}}</p>
+    {{/if}}
+    {{#if book.publishedDate}}
+    <p>Published: {{book.publishedDate}}</p>
+    {{/if}}
+    {{#if book.genre}}
+    <p>Genre: {{book.joinGenres genre}}</p>
+    {{/if}}
+    {{#if book.synopsis}}
+    <p>Synopsis: {{book.synopsis}}</p>
+    {{/if}}
+    <form action="/bookclubs" method="POST">
+        <input type="hidden" name="bookId" value="{{_id}}">
+        <input type="text" name="clubName" placeholder="Enter club name" required>
+        <button type="submit">Create Book Club</button>
+    </form>
+</div>
