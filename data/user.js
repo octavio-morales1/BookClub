@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import * as mongoCollections from '../config/mongoCollections.js';
 const userCollection = await mongoCollections.users();
 
-const saltRounds = 10; // Define the number of salt rounds
+const saltRounds = 10; 
 
 const GET_ALL_USERS = async() => {
     return await userCollection.find({}).toArray();
@@ -12,7 +12,10 @@ const GET_ALL_USERS = async() => {
 const GET_USER_BY_ID = async(id) => {
     if (!id || typeof id !== 'string' || id.trim() === "") throw 'Error: id does not exist or is not a valid string'
     if (!IS_EXIST_USER) throw "Error: User with ID does not exist" 
-    return await userCollection.findOne({ _id: new ObjectId(id) });
+    const user = await userCollection.findOne({ _id: new ObjectId(id) });
+
+    const { first_name, last_name, username, joined_date, book_clubs, reviews } = user
+    return { id, first_name, last_name, username, joined_date, book_clubs, reviews }
 }
 
 const IS_EXIST_USER = async(id) => {
@@ -31,13 +34,9 @@ const CREATE_USER = async(first_name, last_name, email, username, password) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) throw 'Invalid password. Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character.'
     
-    first_name = first_name.title()
-    last_name = last_name.title()
     username = username.toLowerCase()
     email = email.toLowerCase()
 
-
-    const passwordHash = await HASHPASSWORD(password);
     const joinedDate = new Date().toISOString().slice(0, 10);
 
     const user = {
@@ -59,11 +58,15 @@ const CREATE_USER = async(first_name, last_name, email, username, password) => {
     };
 
     const taken_username = await userCollection.findOne({username: username})
-    if (!taken_username) throw "Error: Username is already taken"
+    if (taken_username) throw "Error: Username is already taken"
+
+
+    const take_email = await userCollection.findOne({email: email})
+    if (take_email) throw "Error: email is already taken"
 
     const newInsertInformation = await userCollection.insertOne(user);
     if (!newInsertInformation.insertedId) throw 'Error: Insert failed!';
-    return user;
+    return {signupCompleted: true};
 }
 
 const LOGIN_IN = async (email, password) => {
@@ -74,20 +77,16 @@ const LOGIN_IN = async (email, password) => {
 
     email = email.toLowerCase()
 
-    const users = await userCollection.find({email: email}).toArray()
-    if (!users) throw "Either the email or password is invalid"
+    const user = await userCollection.findOne({email: email})
+    if (!user) throw "Either the email or password is invalid"
 
-    let user = null
-    for (let user_email of users) {
-        const match = await bcrypt.compare(password, user_email.password);
-        if (match) {
-            user = user_email
-            break
-        }
-      }
-      
+    const { _id, first_name, last_name, username, joined_date, book_clubs, reviews } = user;
+    const id = _id.toString()
 
-    const {first_name, last_name, username, joined_date } = user;
-    return await bcrpyt.compare(password, user.password) ? {firstName, lastName, username, favoriteQuote, themePreference, role} : "Either the username or password is invalid"
+    if (await bcrypt.compare(password, user.password)) {
+        return { id, first_name, last_name, username, joined_date, book_clubs, reviews }
+    } else {
+        throw "invalid password"
+    }
 } 
 export {CREATE_USER, GET_ALL_USERS, GET_USER_BY_ID, IS_EXIST_USER, LOGIN_IN};
