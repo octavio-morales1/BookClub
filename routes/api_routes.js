@@ -4,6 +4,8 @@ import * as userAPI from '../data/user.js'
 
 import * as booksAPI from '../data/books.js'
 
+import * as discussionsAPI from '../data/discussions.js'
+
 import * as bookClubAPI from '../data/book_club.js'
 
 const checkBookClubExists = (bookClubs, targetId) => {
@@ -23,7 +25,7 @@ router.get('/', (req, res) => {
     if (!req.session.user) {
       return res.redirect('/login');
     } else {
-      return res.redirect(`/user/${req.session.user.username}`);
+      return res.redirect(`/landing`);
     }
 });
 
@@ -64,7 +66,7 @@ router.post('/login', async (req, res) => {
     let user = await userAPI.LOGIN_IN(email, password); 
     // { id, first_name, last_name, username, joined_date, book_clubs, reviews }
     req.session.user = user;
-    return res.redirect(`/user/${req.session.user.username}`);
+    return res.redirect('/landing');
   } catch(error) {
     console.log(error)
     return res.status(400).render("login", {error: 'Invalid Username or Password'});
@@ -72,12 +74,16 @@ router.post('/login', async (req, res) => {
 });
 
 // User profile route
-router.get('/user/:username', async(req, res) => {
+router.get('/user/:username', async (req, res) => {
   try {
-    const user = await userAPI.GET_USER_BY_USERNAME(req.params.username); //supposed to have await (come back to this later)
-    res.render("userinformation", { user: user });
+      const username = req.params.username;
+      const user = await userAPI.GET_USER_BY_USERNAME(username);
+      if (!user) {
+        return res.redirect('/login');
+      }
+      res.render("userinformation", { user: user });
   } catch (error) {
-      res.status(500).render("error", { error: error });
+      res.status(500).render("error", { error: error.toString() });
   }
 });
 
@@ -199,6 +205,53 @@ router.post('/bookclubs/:bookClubId/discussions/:discussionId', async (req, res)
   }
 });
 
+router.get('/landing', async (req, res) => {
+  try {
+      // Assume new functions to fetch data
+      const bookClubs= await bookClubAPI.getFeaturedBookClubs();
+      const discussions= await discussionsAPI.getPopularDiscussions();
+      //const events= await booksAPI.getUpcomingEvents();
+
+      res.render('landingpage', {
+          user: req.session.user,
+          bookClubs: bookClubs,
+          discussions: discussions,
+          //events: events
+      });
+  } catch (error) {
+      res.status(500).render("error", { error: error.toString() });
+  }
+});
+
+router.get('/logout', (req, res) => {
+  req.session.destroy();
+  return res.render("logout", {title: "Log Out"});
+
+});
+
+//Wait for Allan to fix
+router.post('/books/works/:bookId/reviews', async (req, res) => {
+  const bookId = req.params.bookId;
+  const { comment, rating } = req.body;
+  const userId = req.session.user && req.session.user._id;
+  if (!userId) {
+      return res.status(403).send("User not logged in.");
+  }
+
+  try {
+      const result = await booksAPI.addReview(bookId, userId, rating, comment);
+      if (result) {
+          res.redirect(`/book/works/${bookId}`); // Redirect back to the book details page
+      } else {
+          res.status(500).send("Failed to add review.");
+      }
+  } catch (error) {
+      console.error('Error adding review:', error);
+      res.status(500).render('error', { error: "Error adding review" });
+  }
+});
+
+
 export default router;
 
 // router.post('/books/:bookId/reviews', (req, res) => {
@@ -279,5 +332,3 @@ export default router;
 //     }
   
 //   });
-
-
