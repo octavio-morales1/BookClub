@@ -3,6 +3,22 @@ import * as mongoCollections from '../config/mongoCollections.js';
 const bookCollection = await mongoCollections.books();
 const RESULTS_PER_PAGE = 5;
 
+const addReview = async (bookId, userId, rating, comment) => {
+    const newReview = {
+        userId,
+        rating,
+        comment,
+        date: new Date()
+    };
+
+    const updateResult = await bookCollection.updateOne(
+        { _id: bookId },
+        { $push: { reviews: newReview } }
+    );
+
+    return updateResult.modifiedCount > 0;
+};
+
 
 const CONCATNATE_NAMES = (authors) => {
     let names = authors.map(author => author.name);
@@ -125,4 +141,4 @@ const BOOK_SEARCH = async (title, site_page = 0) => {
     }
   };
 
-export { BOOK_SEARCH, BOOK_SEARCH_BY_KEY, CREATE_BOOK_DATA, IS_EXIST_BOOK };
+export { addReview, BOOK_SEARCH, BOOK_SEARCH_BY_KEY, CREATE_BOOK_DATA, IS_EXIST_BOOK };
