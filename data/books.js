@@ -38,7 +38,6 @@ const GET_AUTHOR_DATA = async(key) => {
     }
 } 
 
-
 const ITERATE_THROUGH_AUTHORS = async (authors) => {
     if (!authors) return [];
     try {

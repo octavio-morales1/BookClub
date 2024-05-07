@@ -16,9 +16,11 @@
     {{#if book.synopsis}}
     <p>Synopsis: {{book.synopsis}}</p>
     {{/if}}
-    <form action="/bookclubs" method="POST">
-        <input type="hidden" name="bookId" value="{{_id}}">
+
+    <form action="/bookclubs/works/{{id}}/create" method="POST">
+        <input type="hidden" name="bookId" value="{{book._id}}">
         <input type="text" name="clubName" placeholder="Enter club name" required>
+        <input type="text" name="description" placeholder="Describe Book Club" required>
         <button type="submit">Create Book Club</button>
     </form>
 </div>

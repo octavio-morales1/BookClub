@@ -14,8 +14,18 @@ const GET_USER_BY_ID = async(id) => {
     if (!IS_EXIST_USER) throw "Error: User with ID does not exist" 
     const user = await userCollection.findOne({ _id: new ObjectId(id) });
 
-    const { first_name, last_name, username, joined_date, book_clubs, reviews } = user
-    return { id, first_name, last_name, username, joined_date, book_clubs, reviews }
+    const { first_name, last_name, username, emailm, joined_date, book_clubs, reviews } = user
+    return { id, first_name, last_name, username, email, joined_date, book_clubs, reviews }
+}
+
+const GET_USER_BY_USERNAME = async(username) => {
+    if (!username || typeof username !== 'string' || username.trim() === "") throw 'Error: id does not exist or is not a valid string'
+    const user = await userCollection.findOne({ username: username });
+    if(!user) throw "User does not exist"
+
+    const { _id, first_name, last_name, email, joined_date, book_clubs, reviews } = user
+    const id = _id.toString()
+    return { id, first_name, last_name, username, email, joined_date, book_clubs, reviews }
 }
 
 const IS_EXIST_USER = async(id) => {
@@ -60,7 +70,6 @@ const CREATE_USER = async(first_name, last_name, email, username, password) => {
     const taken_username = await userCollection.findOne({username: username})
     if (taken_username) throw "Error: Username is already taken"
 
-
     const take_email = await userCollection.findOne({email: email})
     if (take_email) throw "Error: email is already taken"
 
@@ -89,4 +98,4 @@ const LOGIN_IN = async (email, password) => {
         throw "invalid password"
     }
 } 
-export {CREATE_USER, GET_ALL_USERS, GET_USER_BY_ID, IS_EXIST_USER, LOGIN_IN};
+export {CREATE_USER, GET_ALL_USERS, GET_USER_BY_ID, IS_EXIST_USER, LOGIN_IN, GET_USER_BY_USERNAME};

@@ -68,12 +68,12 @@ app.use("/register", (req, res, next) => {
   next();
 })
  
-app.use("/user/:userId", (req, res, next) => {
+app.use("/user/:username", (req, res, next) => {
   if (!req.session.user) return res.redirect("/login")
   next()
 });
 
-app.use("/user/:userId", (req, res, next) => {
+app.use("/user/:username", (req, res, next) => {
   if (req.session.user.book_clubs.length == 0) return res.redirect("/search")
   next()
 });
