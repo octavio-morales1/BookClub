@@ -1,27 +1,35 @@
-{{!--
-
-If the user is logged in , and 'GET /user' endpoint is called, you will render this view based on the specs.
-
+{{!-- 
+Layout for the landing page after successful login, showing featured book clubs and popular discussions 
 --}}
 
-<h1>Book Club Discussions</h1>
+<h1>Welcome to the Book Club Network</h1>
 
-{{#each bookClubs}}
-    <div class="discussion">
-        <h2>{{name}}</h2>
-        <p>Current Book: {{currentBook.title}} by {{currentBook.author}}</p>
-
-        {{#each discussions}}
-            <div class="thread">
-                <h3>{{title}}</h3>
-                <p>{{content}}</p>
-
-                {{#each comments}}
-                    <div class="comment">
-                        <p>{{text}}</p>
-                    </div>
-                {{/each}}
+<div class="new-container">
+    <div class="section">
+        <h2>Featured Book Clubs</h2>
+        {{#each bookClubs}}
+            <div>
+                <h3>{{this.name}}</h3>
+                <p>{{this.description}}</p>
             </div>
+        {{else}}
+            <p>No featured book clubs available.</p>
         {{/each}}
     </div>
-{{/each}}
+
+    <div class="section middle-section">
+        <h2>Popular Discussions</h2>
+        {{#each discussions}}
+            <div>
+                <h3>{{this.title}}</h3>
+                <p>{{this.summary}}</p>
+            </div>
+        {{else}}
+            <p>No active discussions found.</p>
+        {{/each}}
+    </div>
+</div>
+
+<footer>
+    <p>Book Club Network by Allan and Octavio</p>
+</footer>
