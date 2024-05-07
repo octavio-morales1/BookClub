@@ -1,106 +1,122 @@
 import { ObjectId } from 'mongodb';
 import * as mongoCollections from '../config/mongoCollections.js';
-import { IS_EXIST_BOOK } from './books.js';
-import { IS_EXIST_BOOK_CLUB } from './book_club.js';
+import * as bookAPI from './books.js';
+import * as bookClubAPI from './book_club.js';
+import * as userAPI from './user.js';
 
-const discussionCollection = await mongoCollections.discussions();
 const bookClubCollection = await mongoCollections.books_clubs();
 const bookCollection = await mongoCollections.books();
 
-const getPopularDiscussions = async () => {
-  const discussionCollection = await mongoCollections.discussions();
-  return await discussionCollection.find().sort({participantCount: -1}).limit(5).toArray();
-};
-
-
 const createDiscussion = async (clubId, bookId) => {
+    if (!clubId || typeof clubId !== 'string' || clubId.trim() === "") throw 'Error: user id does not exist or is not a valid string';
+    if (!bookId || typeof bookId !== 'string' || bookId.trim().length === 0) throw 'Invalid book key';
+    if (!bookAPI.IS_EXIST_BOOK(bookId) || !bookClubAPI.IS_EXIST_BOOK_CLUB(clubId)) throw "Either the book club or book does not exist";
 
-    if (!clubId || typeof clubId !== 'string' || clubId.trim() === "") throw 'Error: user id does not exist or is not a valid string'
-    if (!bookId || typeof bookId !== 'string' || key.trim().bookId === 0) throw 'Invalid book key';
-    if (!IS_EXIST_BOOK(bookId) || !IS_EXIST_BOOK_CLUB(clubId)) throw "Either the book club or book does not exist"
-
-    const book_club = bookClubCollection.findOne( {_id: new ObjectId(clubId)} )
-    const book = bookCollection.findOne( {_id: new ObjectId(bookId)} )
+    const book_club = bookClubAPI.GET_BOOK_CLUB_BY_ID(clubId);
+    const book = bookAPI.BOOK_SEARCH_BY_KEY(bookId);
 
     const discussion = {
         _id: new ObjectId(),
-        clubId,
         book: {
             _id: bookId,
             title: book.title,
             author: book.author,
             img: book.img
         },
-        status: 'active',
+        active: true,
         threads: [],
         createdAt: new Date(),
         updatedAt: new Date()
     };
 
-  const insertResult = await discussionCollection.insertOne(discussion);
-  if (!insertResult.insertedId) throw 'Error: Failed to create discussion';
+    const insertResult = await bookClubCollection.updateOne(
+        { _id: new ObjectId(clubId) },
+        { $push: { discussions: discussion } }
+    );
 
-  return discussion;
+    if (insertResult.modifiedCount === 0) throw 'Error: Failed to create discussion';
+
+    return discussion;
 };
 
-const createThread = async (discussionId, userId, title, content) => {
-  const thread = {
-    _id: new ObjectId(),
-    createdBy: userId,
-    title,
-    content,
-    comments: [],
-    createdAt: new Date()
-  };
+const createThread = async (bookClubId, discussionId, userId, content) => {
+    if (!bookClubId || typeof bookClubId !== 'string' || bookClubId.trim() === "") throw 'Error: bookClubId does not exist or is not a valid string';
+    if (!discussionId || typeof discussionId !== 'string' || discussionId.trim() === "") throw 'Error: discussionId does not exist or is not a valid string';
+    if (!userId || typeof userId !== 'string' || userId.trim() === "") throw 'Invalid user id';
+    if (!content || typeof content !== 'string' || content.trim() === "") throw 'Invalid content key';
 
-  const updateResult = await discussionCollection.updateOne(
-    { _id: new ObjectId(discussionId) },
-    { $push: { threads: thread }, $currentDate: { updatedAt: true } }
-  );
+    const user = await userAPI.GET_USER_BY_ID(userId);
+    const thread = {
+        _id: new ObjectId(),
+        createdBy: user.first_name,
+        content,
+        comments: [],
+        createdAt: new Date()
+    };
 
-  if (updateResult.modifiedCount === 0) throw 'Error: Failed to create thread';
-  return thread;
+    const updateResult = await bookClubCollection.updateOne(
+        { _id: new ObjectId(bookClubId), 'discussions._id': new ObjectId(discussionId) },
+        { $push: { 'discussions.$.threads': thread } }
+    );
+
+    if (updateResult.modifiedCount === 0) throw 'Error: Failed to create thread';
+
+    return thread;
 };
 
-const commentThread = async (discussionId, threadId, userId, comment) => {
-  const commentObj = {
-    _id: new ObjectId(),
-    createdBy: userId,
-    text: comment,
-    createdAt: new Date()
-  };
+const commentThread = async (bookClubId, discussionId, threadId, userId, comment) => {
+    const commentObj = {
+        _id: new ObjectId(),
+        poster: userId,
+        text: comment,
+        createdAt: new Date()
+    };
 
-  const updateResult = await discussionCollection.updateOne(
-    { _id: new ObjectId(discussionId), 'threads._id': new ObjectId(threadId) },
-    { $push: { 'threads.$.comments': commentObj } }
-  );
+    const updateResult = await bookClubCollection.updateOne(
+        {
+          _id: new ObjectId(bookClubId),
+          'discussions._id': new ObjectId(discussionId),
+          'discussions.threads._id': new ObjectId(threadId)
+        },
+        {
+          $push: {
+            'discussions.$.threads.$[thread].comments': commentObj
+          }
+        },
+        {
+          arrayFilters: [{ 'thread._id': new ObjectId(threadId) }]
+        }
+      );
 
-  if (updateResult.modifiedCount === 0) throw 'Error: Failed to add comment';
+    if (updateResult.modifiedCount === 0) throw 'Error: Failed to add comment';
 
-  return commentObj;
+    return commentObj;
 };
 
-const updateDiscussionStatus = async (discussionId, newStatus) => {
-    const updateResult = await discussionCollection.updateOne(
-        { _id: new ObjectId(discussionId) },
-        { $set: { status: newStatus } }
+const updateDiscussionStatus = async (bookClubId, discussionId, newStatus) => {
+    const updateResult = await bookClubCollection.updateOne(
+        { _id: new ObjectId(bookClubId), 'discussions._id': new ObjectId(discussionId) },
+        { $set: { 'discussions.$.active': newStatus } }
     );
 
     if (updateResult.modifiedCount === 0) throw 'Error: Failed to update discussion status';
 };
 
-const getThread = async (discussionId, threadId) => {
-  const discussion = await discussionCollection.findOne(
-    { _id: new ObjectId(discussionId) },
-    { projection: { 'threads.$': 1 } }
-  );
+const getThread = async (bookClubId, discussionId, threadId) => {
+    const bookClub = await bookClubCollection.findOne(
+        { _id: new ObjectId(bookClubId) },
+        { projection: { 'discussions.$': 1 } }
+    );
 
-  if (!discussion) throw 'Error: Discussion not found';
+    if (!bookClub) throw 'Error: Book club not found';
 
-  const thread = discussion.threads.find(t => t._id.equals(new ObjectId(threadId)));
-  if (!thread) throw 'Error: Thread not found';
+    const discussion = bookClub.discussions.find(d => d._id.equals(new ObjectId(discussionId)));
+    if (!discussion) throw 'Error: Discussion not found';
 
-  return thread;
+    const thread = discussion.threads.find(t => t._id.equals(new ObjectId(threadId)));
+    if (!thread) throw 'Error: Thread not found';
+
+    return thread;
 };
 
-export { getPopularDiscussions, createDiscussion, createThread, commentThread, getThread, updateDiscussionStatus };
+export { createDiscussion, createThread, commentThread, getThread, updateDiscussionStatus };
