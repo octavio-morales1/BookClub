@@ -9,7 +9,10 @@ const userCollection = await mongoCollections.users();
 const bookClubCollection = await mongoCollections.books_clubs();
 const discussionCollection = await mongoCollections.discussions();
 
-
+const getFeaturedBookClubs = async () => {
+    const bookClubCollection = await mongoCollections.books_clubs();
+    return await bookClubCollection.find().limit(5).toArray();
+}
 
 const checkDiscussionExists = (discussions, discussionId) => {
     for (let discussion of discussions) {
@@ -201,4 +204,4 @@ const REMOVE_USER_FROM_BOOKCLUB = async(book_club_id, user_id) => {
     return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
-export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, END_CURRENT_SESSION, START_NEW_SESSION}
+export { getFeaturedBookClubs, IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, END_CURRENT_SESSION, START_NEW_SESSION}
