@@ -1,0 +1,64 @@
+
+
+
+    {{!-- const discussion = {
+        _id: new ObjectId(),
+        clubId,
+        book: {
+            _id: bookId,
+            title: book.title,
+            author: book.author,
+            img: book.img
+        },
+        status: 'active',
+        threads: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+    }; --}}
+
+<h1>Discussion - {{message}}</h1>
+
+<div class="book-info">
+  <img src="{{book.img}}" alt="Book Cover" width="150" height="225">
+  <p>by {{book.author}}</p>
+</div>
+
+{{#if threads}}
+  {{#each threads}}
+    <div class="thread">
+      <h3>{{title}}</h3>
+      <p>{{content}}</p>
+
+      {{#each comments}}
+        <div class="comment">
+          <span class="comment-author">{{createdBy.username}}:</span>
+          <p>{{text}}</p>
+        </div>
+      {{/each}}
+
+      <form action="/comment" method="POST" class="comment-form">
+        <input type="hidden" name="discussionId" value="{{../discussion._id}}">
+        <input type="hidden" name="threadId" value="{{_id}}">
+        <textarea placeholder="Add a comment..." name="comment"></textarea>
+        <button type="submit">Post Comment</button>
+      </form>
+    </div>
+  {{/each}}
+{{else}}
+  <p>No threads found for this discussion.</p>
+{{/if}}
+
+
+{{!-- 
+<form id="createThreadForm">
+    <input type="hidden" id="discussionId" name="discussionId" value="{{discussion._id}}">
+    <input type="hidden" id="userId" name="userId" value="{{user.id}}">
+
+    <label for="content">Content:</label>
+    <textarea id="content" name="content" required></textarea>
+
+    <button type="submit">Create Thread</button>
+</form>
+
+
+<script src="/public/js/"></script> --}}

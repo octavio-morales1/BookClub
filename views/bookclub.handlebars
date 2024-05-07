@@ -14,6 +14,7 @@
 <div class="discussion-list">
     {{#each bookClub.discussions}}
     <div class="discussion-card">
+        <a href="/bookclubs/{{../bookClub._id}}/discussions/{{_id}}">
         <h3>{{title}}</h3>
         <p>{{content}}</p>
         <a href="/bookclubs/{{../bookClub._id}}/discussions/{{_id}}">View Comments</a>

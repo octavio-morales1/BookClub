@@ -10,11 +10,12 @@ const bookCollection = await mongoCollections.books();
 const createDiscussion = async (clubId, bookId) => {
 
     if (!clubId || typeof clubId !== 'string' || clubId.trim() === "") throw 'Error: user id does not exist or is not a valid string'
-    if (!bookId || typeof bookId !== 'string' || key.trim().bookId === 0) throw 'Invalid book key';
+    if (!bookId || typeof bookId !== 'string' || bookId.trim().bookId === 0) throw 'Invalid book key';
     if (!IS_EXIST_BOOK(bookId) || !IS_EXIST_BOOK_CLUB(clubId)) throw "Either the book club or book does not exist"
 
     const book_club = bookClubCollection.findOne( {_id: new ObjectId(clubId)} )
-    const book = bookCollection.findOne( {_id: new ObjectId(bookId)} )
+    const book = bookCollection.findOne( {_id: bookId } )
+
 
     const discussion = {
         _id: new ObjectId(),
@@ -37,11 +38,10 @@ const createDiscussion = async (clubId, bookId) => {
   return discussion;
 };
 
-const createThread = async (discussionId, userId, title, content) => {
+const createThread = async (discussionId, userId, content) => {
   const thread = {
     _id: new ObjectId(),
     createdBy: userId,
-    title,
     content,
     comments: [],
     createdAt: new Date()
@@ -59,7 +59,7 @@ const createThread = async (discussionId, userId, title, content) => {
 const commentThread = async (discussionId, threadId, userId, comment) => {
   const commentObj = {
     _id: new ObjectId(),
-    createdBy: userId,
+    poster: userId,
     text: comment,
     createdAt: new Date()
   };

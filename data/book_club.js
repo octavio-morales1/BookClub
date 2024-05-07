@@ -2,7 +2,7 @@ import * as mongoCollections from '../config/mongoCollections.js';
 
 import { BOOK_SEARCH_BY_KEY, IS_EXIST_BOOK} from './books.js'
 import { IS_EXIST_USER, GET_USER_BY_ID } from './user.js';
-import { createDiscussion, updateDiscussionStatus} from './discussions.js';
+import { createDiscussion, updateDiscussionStatus, createThread} from './discussions.js';
 import { ObjectId } from 'mongodb';
 
 const userCollection = await mongoCollections.users();
@@ -13,7 +13,7 @@ const discussionCollection = await mongoCollections.discussions();
 
 const checkDiscussionExists = (discussions, discussionId) => {
     for (let discussion of discussions) {
-        if (discussion._id === discussionId) {
+        if (discussion._id.toString() === discussionId) {
             return true;
         }
     }
@@ -98,13 +98,11 @@ const GET_DISCUSSION_BY_BOOKCLUB_ID = async(bookClubId, discussionID) => {
 
     const book_club = await GET_BOOK_CLUB_BY_ID(bookClubId);
     if (!checkDiscussionExists(book_club.discussions, discussionID)) throw "discussion does not exist in book club"
-
+    
     const discussion = await discussionCollection.findOne({ _id: new ObjectId(discussionID) });
-    if (discussion === null) throw "Error"
-
-    checkDiscussionExists
-
-    return
+    if (discussion === null) throw "Error retrieving discussion data"
+    
+    return discussion
 }
 
 const UPDATE_BOOK_CLUB_CURRENT_BOOK = async(book_id, book_club_id) => {
@@ -151,7 +149,6 @@ const START_NEW_SESSION = async (bookClubId, newBookKey) => {
     return await bookClubCollection.findOne({ _id: new ObjectId(bookClubId) });
 
 };
-
 
 
 const END_CURRENT_SESSION = async (moderatorId, bookClubId) => {
@@ -201,4 +198,4 @@ const REMOVE_USER_FROM_BOOKCLUB = async(book_club_id, user_id) => {
     return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
-export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, END_CURRENT_SESSION, START_NEW_SESSION}
+export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, END_CURRENT_SESSION, START_NEW_SESSION, GET_DISCUSSION_BY_BOOKCLUB_ID}

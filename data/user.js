@@ -14,7 +14,7 @@ const GET_USER_BY_ID = async(id) => {
     if (!IS_EXIST_USER) throw "Error: User with ID does not exist" 
     const user = await userCollection.findOne({ _id: new ObjectId(id) });
 
-    const { first_name, last_name, username, emailm, joined_date, book_clubs, reviews } = user
+    const { first_name, last_name, username, email, joined_date, book_clubs, reviews } = user
     return { id, first_name, last_name, username, email, joined_date, book_clubs, reviews }
 }
 

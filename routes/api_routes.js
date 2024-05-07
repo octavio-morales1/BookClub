@@ -6,9 +6,11 @@ import * as booksAPI from '../data/books.js'
 
 import * as bookClubAPI from '../data/book_club.js'
 
+import * as discussionAPI from '../data/discussions.js'
+
 const checkBookClubExists = (bookClubs, targetId) => {
   for (let bookClub of bookClubs) {
-      if (bookClub._id === targetId) {
+      if (bookClub._id.toString() === targetId) {
           return true;
       }
   }
@@ -128,22 +130,20 @@ router.post('/bookclubs/works/:bookId/create', async (req, res) => {
     return res.redirect(`/bookclubs/${bookClub._id}`);
   } catch (error) {
     console.error("Failed to create book club or start session:", error);
-    return res.status(500).render("error", { error: "Failed to create book club or start session" });
-  }
+    return res.status(500).render("error", { error: error });
+}
 });
-
-
 
 router.get('/bookclubs/:bookClubId', async (req, res) => {
   const bookClubId = req.params.bookClubId;
   try {
-    if (!checkBookClubExists(req.session.user.book_clubs, bookClubId)){
-      res.redirect(`/bookclubs/${bookClub._id}/join`);
-    }
     const bookClub = await bookClubAPI.GET_BOOK_CLUB_BY_ID(bookClubId);
+    if (!checkBookClubExists(req.session.user.book_clubs, bookClubId)){
+      res.redirect(`/bookclubs/${bookClubId}/join`);
+    }
     res.render('bookclub', { user: req.session.user, bookClub })
   } catch (error) {
-      res.status(500).render("error", { error: "Failed to join book club" });
+      res.status(500).render("error", { error: error });
   }
 });
 
@@ -155,34 +155,49 @@ router.get('/bookclubs/:bookClubId/join', async (req, res) => {
     }
     res.render('join')
   } catch (error) {
-      res.status(500).render("error", { error: "Failed to join book club" });
+      res.status(500).render("error", { error: error });
   }
 });
 
 router.post('/bookclubs/:bookClubId/join', async (req, res) => {
-  const bookClubId = req.params.bookClubId;
   try {
-    if (checkBookClubExists(req.session.user.book_clubs, bookClubId)){
+    if (checkBookClubExists(req.session.user.book_clubs, req.params.bookClubId)){
       res.redirect(`/bookclubs/${bookClub._id}`);
     }
 
-    res.render('join')
+    await bookClubAPI.JOIN_BOOK_CLUB(req.session.user.id, req.params.bookClubId)
+    res.redirect(`/bookclubs/${bookClub._id}`);
   } catch (error) {
-    res.status(500).render("error", { error: "Failed to join book club" });
+    res.status(500).render("error", { error: error });
   }
 });
 
+// const discussion = {
+//   _id: new ObjectId(),
+//   clubId,
+//   book: {
+//       _id: bookId,
+//       title: book.title,
+//       author: book.author,
+//       img: book.img
+//   },
+//   status: 'active',
+//   threads: [],
+//   createdAt: new Date(),
+//   updatedAt: new Date()
+// }; 
+
 router.get('/bookclubs/:bookClubId/discussions/:discussionId', async (req, res) => {
-  const bookClubId = req.params.bookClubId;
-  const discussionId = req.params.discussionId;
   try {
-    if (!checkBookClubExists(req.session.user.book_clubs, bookClubId)){
+    if (!checkBookClubExists(req.session.user.book_clubs, req.params.bookClubId)) {
       res.redirect(`/bookclubs/${bookClub._id}/join`);
     }
-    
+    const discussion = await bookClubAPI.GET_DISCUSSION_BY_BOOKCLUB_ID(req.params.bookClubId, req.params.discussionId);
 
+    const {_id, clubId, book, status, threads, createAt, updateAt } = discussion
+    res.render("discussion", {_id, clubId, book, status, threads, createAt, updateAt});
   } catch (error) {
-      res.status(500).render("error", { error: "Failed to join book club" });
+    res.status(500).render("error", { error: error });
   }
 });
 
@@ -192,12 +207,25 @@ router.post('/bookclubs/:bookClubId/discussions/:discussionId', async (req, res)
   try {
     if (checkBookClubExists(req.session.user.book_clubs, bookClubId)){
       res.redirect(`/bookclubs/${bookClub._id}`);
-    }
+    }s
     res.render('join')
   } catch (error) {
-      res.status(500).render("error", { error: "Failed to join book club" });
+      res.status(500).render("error", { error: error });
   }
 });
+
+router.post('/comment', async (req, res) => {
+  const { discussionId, threadId, comment } = req.body;
+
+  try {
+    const commentObj = await discussionAPI.commentThread(discussionId, threadId, req.session.user.id, comment);
+    // Handle successful comment creation, e.g., redirect or render a view
+    res.redirect(`/discussion/${discussionId}`);
+  } catch (error) {
+    res.status(500).render("error", { error: error });
+  }
+});
+
 
 export default router;
 
