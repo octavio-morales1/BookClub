@@ -38,8 +38,8 @@
     </form>
 
     <!-- Create Book Club Form -->
-    <form action="/bookclubs/works/{{book._id}}/create" method="POST" class="book-club-form">
-        <input type="hidden" name="bookId" value="{{book._id}}">
+    <form action="/bookclubs/works/{{id}}/create" method="POST" class="book-club-form">
+        <input type="hidden" name="bookId" value="{{id}}">
         <input type="text" name="clubName" placeholder="Enter club name" required>
         <input type="text" name="description" placeholder="Describe Book Club" required>
         <button type="submit">Create Book Club</button>

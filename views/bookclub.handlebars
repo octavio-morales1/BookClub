@@ -1,0 +1,77 @@
+{{!-- Current Book --}}
+<div class="current-book">
+  <h2>Current Book</h2>
+  <div class="book-info">
+    <img src="{{book_club.currentBook.img}}" alt="{{book_club.currentBook.title}}">
+    <div>
+      <h3>{{book_club.currentBook.title}}</h3>
+      <p>By {{book_club.currentBook.author}}</p>
+    </div>
+  </div>
+</div>
+
+{{!-- Discussions --}}
+<div class="discussions">
+  <h2>Discussions</h2>
+  
+  {{#each book_club.discussions}}
+    <div class="discussion {{#if active}}active{{/if}}">
+      <h3>{{book.title}}</h3>
+      <p>{{book.author}}</p>
+      <p>Created: {{ createdAt}}</p>
+
+      {{!-- Threads --}}
+      <div class="threads">
+        {{#each threads}}
+          <div class="thread">
+            <div class="thread-header">
+              <h4>{{createdBy.username}}</h4>
+              <p>{{ createdAt}}</p>
+            </div>
+            <div class="thread-content">
+              {{content}}
+            </div>
+
+            {{#if ../active}}
+            <h3> Add comment:</h3>
+              <form action="/comment" method="POST" class="comment-form">
+                <input type="hidden" name="discussionId" value="{{../_id}}">
+                <input type="hidden" name="bookClubId" value="{{@root.bookClubId}}">
+                <input type="hidden" name="threadId" value="{{_id}}">
+                <textarea placeholder="Add a comment..." name="comment"></textarea>
+                <button type="submit">Post Comment</button>
+              </form>
+            {{/if}}
+
+
+            {{!-- Comments --}}
+            <div class="comments">
+              {{#each comments}}
+                <div class="comment">
+                  <div class="comment-header">
+                    <h5>{{poster.username}}</h5>
+                    <p>{{ createdAt}}</p>
+                  </div>
+                  <div class="comment-content">
+                    {{text}}
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  {{/each}}
+</div>
+
+{{!-- Add Thread Form --}}
+<div class="add-thread">
+  <h3>Add a New Thread:</h3>
+    <form action="/thread" method="POST" class="comment-form">
+        <input type="hidden" name="discussionId" value="{{discussionId}}">
+        <input type="hidden" name="bookClubId" value="{{bookClubId}}">
+        <input type="text" placeholder="Add a comment..." name="content">
+        <button type="submit">Post Thread</button>
+    </form>
+</div>
