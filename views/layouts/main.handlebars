@@ -21,7 +21,9 @@ for the theme, you can simply read the themePreference for the user and inject i
             <nav>
                 <ul>
                     {{#if user}}
-                        <li><a href="/user/{{user._id}}">Profile</a></li>
+                        <li><a href="/landing">Home</a></li>
+                        <li><a href="/user/{{user.username}}">Profile</a></li>
+                        <li><a href="/search">Search</a></li>
                         <li><a href="/bookclubs">Book Clubs</a></li>
                         <li><a href="/logout">Logout</a></li>
                     {{else}}
@@ -47,4 +49,3 @@ for the theme, you can simply read the themePreference for the user and inject i
     </footer>
 </body>
 </html>
-
