@@ -7,6 +7,18 @@ import { ObjectId } from 'mongodb';
 
 const userCollection = await mongoCollections.users();
 const bookClubCollection = await mongoCollections.books_clubs();
+const discussionCollection = await mongoCollections.discussions();
+
+
+
+const checkDiscussionExists = (discussions, discussionId) => {
+    for (let discussion of discussions) {
+        if (discussion._id === discussionId) {
+            return true;
+        }
+    }
+    return false;
+}
 
 const IS_EXIST_BOOK_CLUB = async(id) => {
     if (!id || typeof id !== 'string' || id.trim() === "") throw 'Error: is not a valid string'
@@ -21,39 +33,42 @@ const GET_BOOK_CLUB_BY_ID = async(id) => {
     return await bookClubCollection.findOne({ _id: new ObjectId(id) });;
 }
 
-const CREATE_BOOK_CLUB = async(user_id, name, description, meeting, currentBook_key) => {
+const CREATE_BOOK_CLUB = async(user_id, name, description, currentBook_key) => {
     if (!user_id || typeof user_id !== 'string' || user_id.trim() === "") throw 'Error: id does not exist or is not a valid string'
     if (!name || typeof name !== 'string' || name.trim() === "") throw 'Error: name does not exist or is not a valid string'
     if (!description || typeof description !== 'string' || description.trim() === "") throw 'Error: description text does not exist or is not a valid string'
-    if (!meeting || typeof meeting !== 'string' || meeting.trim() === "") throw 'Error: meetings text does not exist or is not a valid string'
     if (!IS_EXIST_USER(user_id)) throw "Error: User does not exist"
     if (!IS_EXIST_BOOK(currentBook_key)) throw "Error: Book does not exist"
     
-    const creator = await GET_USER_BY_ID(user_id)
+    const user = await GET_USER_BY_ID(user_id)
     const book = await BOOK_SEARCH_BY_KEY(currentBook_key)
 
     const book_club = {
         _id: new ObjectId(),
         name: name,
-        moderator: creator,
+        moderator: user,
         description: description,
-        meeting: meeting,
         currentBook: book,
-        members: [creator],
+        members: [user],
         discussions: [] 
     };
 
     const newInsertInformation = await bookClubCollection.insertOne(book_club);
     if (!newInsertInformation.insertedId) throw 'Error: Insert failed!';
 
-    const initialDiscussion = await createDiscussion(book_club._id, book._id, book.title, book.author);
+    const filter_for_user = { _id: new ObjectId(user_id) };
+    const update_for_user = { $set: { book_clubs: user.book_clubs ? [...user.book_clubs, book_club] : [book_club]} };
+    const result_for_user = await userCollection.updateOne(filter_for_user, update_for_user);
+    if (result_for_user.modifiedCount == 0) throw "Error: appending book club failed"
+
+    const initialDiscussion = await createDiscussion(user_id, currentBook_key);
     book_club.discussions.push(initialDiscussion);
 
     await bookClubCollection.updateOne(
         { _id: book_club._id },
         { $set: { discussions: book_club.discussions } }
     );
-
+    
     return book_club
 }
 
@@ -77,6 +92,20 @@ const JOIN_BOOK_CLUB = async(user_id, book_club_id) => {
     return await GET_BOOK_CLUB_BY_ID(book_club_id)
 }
 
+const GET_DISCUSSION_BY_BOOKCLUB_ID = async(bookClubId, discussionID) => {
+    if (!bookClubId || typeof bookClubId !== 'string' || bookClubId.trim() === "") throw 'Error: bookclub id does not exist or is not a valid string'
+    if (!discussionID || typeof discussionID !== 'string' || discussionID.trim() === "") throw 'Error: discussion id does not exist or is not a valid string'
+
+    const book_club = await GET_BOOK_CLUB_BY_ID(bookClubId);
+    if (!checkDiscussionExists(book_club.discussions, discussionID)) throw "discussion does not exist in book club"
+
+    const discussion = await discussionCollection.findOne({ _id: new ObjectId(discussionID) });
+    if (discussion === null) throw "Error"
+
+    checkDiscussionExists
+
+    return
+}
 
 const UPDATE_BOOK_CLUB_CURRENT_BOOK = async(book_id, book_club_id) => {
     if (!book_id || typeof book_id !== 'string' || book_id.trim() === "") throw 'Error: user id does not exist or is not a valid string'
@@ -96,7 +125,7 @@ const UPDATE_BOOK_CLUB_CURRENT_BOOK = async(book_id, book_club_id) => {
 
 const START_NEW_SESSION = async (bookClubId, newBookKey) => {
     // Validate book ID and check existence
-    if (!book_id || typeof book_id !== 'string' || book_id.trim() === "") throw 'Error: user id does not exist or is not a valid string'
+    if (!book_id || typeof book_id !== 'string' || book_id.trim() === "") throw 'Error: book id does not exist or is not a valid string'
     if (!newBookKey || typeof newBookKey !== 'string' || key.trim().newBookKey === 0) throw 'Invalid book key';
     if (!ObjectId.isValid(bookClubId) || !await BOOK_SEARCH_BY_KEY(newBookKey)) throw 'Invalid book club ID or book key'
 

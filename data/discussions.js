@@ -7,7 +7,6 @@ const discussionCollection = await mongoCollections.discussions();
 const bookClubCollection = await mongoCollections.books_clubs();
 const bookCollection = await mongoCollections.books();
 
-
 const createDiscussion = async (clubId, bookId) => {
 
     if (!clubId || typeof clubId !== 'string' || clubId.trim() === "") throw 'Error: user id does not exist or is not a valid string'
