@@ -7,6 +7,11 @@ import { ObjectId } from 'mongodb';
 const userCollection = await mongoCollections.users();
 const bookClubCollection = await mongoCollections.books_clubs();
 
+const getFeaturedBookClubs = async () => {
+    const bookClubCollection = await mongoCollections.books_clubs();
+    return await bookClubCollection.find().limit(5).toArray();
+}
+
 const checkDiscussionExists = (discussions, discussionId) => {
     for (let discussion of discussions) {
         if (discussion._id.toString() === discussionId) {
@@ -155,4 +160,4 @@ const REMOVE_USER_FROM_BOOKCLUB = async (bookClubId, userId) => {
     return await GET_BOOK_CLUB_BY_ID(bookClubId);
 }
     
-    export { IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, GET_DISCUSSION_BY_BOOKCLUB_ID }
+    export { getFeaturedBookClubs, IS_EXIST_BOOK_CLUB, GET_BOOK_CLUB_BY_ID, CREATE_BOOK_CLUB, JOIN_BOOK_CLUB, UPDATE_BOOK_CLUB_CURRENT_BOOK, DELETE_BOOK_CLUB, REMOVE_USER_FROM_BOOKCLUB, GET_DISCUSSION_BY_BOOKCLUB_ID }
