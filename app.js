@@ -27,7 +27,7 @@ app.use(
     name: "AuthCookie",
     secret: "This is a secret.. shhh don't tell anyone",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
   })
 );
 
@@ -56,7 +56,7 @@ app.use((req, res, next) => {
  
 app.use("/login", (req, res, next) => {
   if(req.session.user){
-    return res.redirect(`/user/${req.session.user.username}`);
+    return res.redirect(`/landing`);
   }
   next();
 })
@@ -67,18 +67,32 @@ app.use("/register", (req, res, next) => {
   }
   next();
 })
- 
-app.use("/user/:username", (req, res, next) => {
+app.use((req, res, next) => {
+  if (req.session.userId) {
+    userAPI.getUserById(req.session.userId)
+        .then(user => {
+            res.locals.user = user;
+            next();
+        }).catch(err => {
+            console.error("Error fetching user:", err);
+            next();
+        });
+  } else {
+      next();
+  }
+});
+
+app.use("/user/:userId", (req, res, next) => {
   if (!req.session.user) return res.redirect("/login")
   next()
 });
 
-app.use("/user/:username", (req, res, next) => {
-  if (req.session.user.book_clubs.length == 0) return res.redirect("/search")
-  next()
-});
+//app.use("/user/:userId", (req, res, next) => {
+  //if (req.session.user.book_clubs.length == 0) return res.redirect("/search")
+  //next()
+//});
 
-//  // Middleware 6
+// Middleware 6
 app.use('/logout', (req, res, next) => {
   if (!req.session.user) return res.redirect('/login');
   next();
