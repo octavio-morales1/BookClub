@@ -57,7 +57,38 @@ header {
     border-bottom: #000000 3px solid;
     border-radius:15px;
 }
+header nav {
+    display: flex;
+    align-items: center;
+}
 
+header nav ul {
+    list-style: none;
+    display: flex;
+    padding: 0;
+    margin: 0;
+    gap: 10px;
+}
+
+header nav ul li {
+    background: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header nav ul li a {
+    display: block; 
+    padding: 5px 15px;
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+header nav ul li:hover {
+    background-color: #0077cc;
+    color: white;
+}
 header a {
     color: #fff;
     text-align: center;
@@ -109,7 +140,7 @@ button:hover, input[type="submit"]:hover {
     transition: background 0.3s;
 }
 
-input[type="text"], input[type="password"], textarea {
+input[type="email"], input[type="password"], input[type="text"], textarea {
     width: calc(100% - 22px);
     padding: 10px;
     margin-top: 5px;
@@ -178,3 +209,266 @@ footer {
     color: #005f73;
 }
 
+.form-container, .registration-container {
+    width: 75%;
+    margin: 50px auto;
+    padding: 40px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
+
+.form-container label, .registration-container label {
+    font-weight: bold;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.registration-container input[type="text"],
+.registration-container input[type="email"],
+.registration-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+}
+
+.registration-container input[type="submit"] {
+    display: block;
+    width: auto;
+    margin: auto 0;
+    padding: 10px 50px;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.registration-container input[type="submit"]:hover {
+    background-color: #005fa3;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-heading {
+    font-size: 48px;
+    text-decoration: underline;
+    color: #333;
+    text-align: center;
+}
+
+.profile-container {
+    max-width: 960px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.profile-section {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.profile-section:last-child {
+    border-bottom: none;
+}
+
+.profile-section h2 {
+    font-size: 22px;
+    color: #333;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #005f73;
+}
+
+.profile-section p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #666;
+}
+
+.profile-section .no-content {
+    color: #999;
+    font-style: italic;
+}
+
+.profile-details p {
+    margin: 5px 0;
+}
+
+.profile-name {
+    text-align: center;
+    text-decoration: underline;
+}
+
+.search-container {
+    width: 75%;
+    margin: 50px auto;
+    padding: 40px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
+
+.search-title {
+    font-size: 48px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.search-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+}
+
+.search-button {
+    padding: 10px 20px;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-button:hover {
+    background-color: #005fa3;
+}
+
+.book-details-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    background-color: #f4f4f9;
+}
+
+.book-info {
+    width: 40%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.book-cover {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.reviews, .review-form {
+    margin-top: 20px;
+}
+
+.book-club-form {
+    width: 30%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="text"], input[type="submit"], textarea {
+    padding: 10px;
+    margin-top: 10px;
+    width: calc(100% - 22px);
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.book-clubs-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.book-club {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.book-club:hover {
+    transform: translateY(-5px);
+}
+
+.book-club h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.book-club p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.view-club-btn {
+    display: block;
+    text-align: center;
+    padding: 10px 20px;
+    margin-top: 15px;
+    background-color: #0077cc;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.view-club-btn:hover {
+    background-color: #005fa3;
+}
+
+.featured-book-clubs, .popular-discussions {
+    flex: 1;
+    padding: 20px;
+    margin: 10px;
+}
+
+.imgPHill {
+    max-width: 100%;
+    height: auto;
+    border-radius:85px;
+    animation: fadeIn 5s ease-in-out;   
+}
