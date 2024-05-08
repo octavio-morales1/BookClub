@@ -1,11 +1,3 @@
-{{! This will be your default layout for all handlebars file rendered. This will be inherited by all other templates. }}
-{{! Refer lecture code to learn more on how this works
-don't forget to include your css and your client-side script file references in the layout.
-for the theme, you can simply read the themePreference for the user and inject it into the body element}}
-{{! <body class="{{themePreference}}
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,9 +7,9 @@ for the theme, you can simply read the themePreference for the user and inject i
     <link rel="stylesheet" href="/public/css/styles.css" type="text/css">
 </head>
 <body>
-    <header>
+    <header class="main-header">
         <div class="container">
-            <h1>Book Club Network</h1>
+            <h1 class="logo">Book Club Network</h1>
             <nav>
                 <ul>
                     {{#if user}}
