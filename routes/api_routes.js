@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
     let user = await userAPI.LOGIN_IN(email, password); 
     // { id, first_name, last_name, username, joined_date, book_clubs, reviews }
     req.session.user = user;
-    return res.redirect(`/user/${req.session.user.username}`);
+    return res.redirect(`/landing`);
   } catch(error) {
     return res.status(400).render("login", {error: 'Invalid Username or Password'});
   }
@@ -202,85 +202,27 @@ router.post('/thread', async (req, res) => {
   }
 });
 
+router.get('/landing', async (req, res) => {
+  try {
+      const bookClubs= await bookClubAPI.getFeaturedBookClubs();
+      const discussions= await discussionAPI.getPopularDiscussions();
+
+      res.render('landingpage', {
+          user: req.session.user,
+          bookClubs: bookClubs,
+          discussions: discussions,
+      });
+  } catch (error) {
+      res.status(500).render("error", { error: error.toString() });
+  }
+});
+
+router.get('/logout', (req, res) => {
+  req.session.destroy();
+  return res.render("logout", {title: "Log Out"});
+
+});
+
+
 export default router;
-
-// router.post('/books/:bookId/reviews', (req, res) => {
-// // Handle posting a new review for the book
-// });
-
-
-// // List all book clubs
-// router.get('/bookclubs', (req, res) => {
-//     const userId = req.session.userId; // Assuming you have a session set up
-  
-//     try {
-//       const bookClubs = await getUserBookClubs(userId);
-//       res.render('bookclubs', { bookClubs });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Internal Server Error');
-//     }
-//   });
-  
-//   router.post('/bookclubs', async (req, res) => {
-//     const { bookId, clubName } = req.body;
-//     const userId = req.session.userId; // Assuming you have a session set up
-  
-//     try {
-//       // Validate the input data
-//       if (!bookId || !clubName) {
-//         return res.status(400).send('Book ID and club name are required');
-//       }
-  
-//       // Create a new book club
-//       const newBookClub = await createBookClub(userId, bookId, clubName);
-  
-//       // Redirect or render a success message
-//       res.redirect('/bookclubs/' + newBookClub._id);
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Internal Server Error');
-//     }
-//   });
-  
-//   // Create a new book club
-//   router.get('/bookclubs/create', (req, res) => {
-//     // Render the form to create a new book club
-//   });
-  
-//   router.post('/bookclubs/create', (req, res) => {
-//     // Handle creating a new book club
-//   });
-  
-//   // Display discussions for a book club
-//   router.get('/bookclubs/:bookclubId', (req, res) => {
-//     const bookClubId = req.params.bookClubId;
-  
-//     try {
-//       const bookClub = await getBookClubById(bookClubId);
-//       res.render('book-club', { bookClub });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Internal Server Error');
-//     }
-//   });
-  
-//   // Join a book club
-//   router.post('/bookclubs/:bookclubId/join', (req, res) => {
-//     // Handle a user joining the specified book club
-//   });
-  
-//   // Display a specific discussion in a book club
-//   router.get('/bookclubs/:bookclubId/:discussionId', (req, res) => {
-//     const { bookclubId, discussionId } = req.params;
-//     try {
-//       const discussion = await getDiscussionById(bookclubId, discussionId);
-//       res.render('discussion', { discussion });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).send('Internal Server Error');
-//     }
-  
-//   });
-
 
