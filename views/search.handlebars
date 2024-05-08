@@ -1,9 +1,9 @@
-
-
-<form action="/books/search" method="POST" class="search-form">
-<label for="searcBook" class="form-label">Search Book:</label>
-<div id="search-form">
-    <input type="text" id="searchBookByName" name="searchBookByName" class="text-input">
-    <input type="submit" value="Search" class="submit-button">
+<div class="search-container">
+    <h1 class="search-title">Search Book:</h1>
+    <form action="/books/search" method="POST" class="search-form">
+        <div class="form-group">
+            <input type="text" id="searchBookByName" name="searchBookByName" placeholder="Enter Book Title or Author..." class="search-input">
+        </div>
+        <button type="submit" class="search-button">Search</button>
+    </form>
 </div>
-</form>
