@@ -1,57 +1,13 @@
-<h1>{{user.first_name}}'s Profile</h1>
+<h1 class="profile-name">{{user.first_name}}'s Profile</h1>
 
-<div class="user-details">
-    <h2>User Information</h2>
-    <p><strong>First Name:</strong> {{user.first_name}}</p>
-    <p><strong>Last Name:</strong> {{user.last_name}}</p>
-    <p><strong>Username:</strong> {{user.username}}</p>
-    <p><strong>Email:</strong> {{user.email}}</p>
-    <p><strong>Joined:</strong> {{user.joined_date}}</p>
-</div>
-
-<div>
-    <h2>Reading List</h2>
-    {{#if user.readingList.length}}
-        {{#each user.readingList}}
-            <p>{{this.title}} - {{this.status}}</p>
-        {{/each}}
-    {{else}}
-        <p>Not currently reading anything.</p>
-    {{/if}}
-</div>
-
-<div>
-    <h2>Reviews</h2>
-    {{#if user.reviews.length}}
-        {{#each user.reviews}}
-            <div>
-                <p>{{this.bookTitle}} - {{this.rating}} stars</p>
-                <p>{{this.text}}</p>
-            </div>
-        {{/each}}
-    {{else}}
-        <p>Currently has no reviews.</p>
-    {{/if}}
-</div>
-
-<div>
-    <h2>Book Clubs</h2>
-    {{#if user.bookClubs.length}}
-        {{#each user.bookClubs}}
-            <p>{{this.name}}</p>
-        {{/each}}
-    {{else}}
-        <p>Not a member of any book clubs.</p>
-    {{/if}}
-</div>
-
-<div>
-    <h2>Recent Activities</h2>
-    {{#if user.activities.length}}
-        {{#each user.activities}}
-            <p>{{this.activityType}} on {{formatDate this.timestamp}}</p>
-        {{/each}}
-    {{else}}
-        <p>No recent activities.</p>
-    {{/if}}
+<div class="profile-container">
+    <div class="profile-section">
+        <h2>User Information</h2>
+        <p>First Name: {{user.first_name}}</p>
+        <p>Last Name: {{user.last_name}}</p>
+        <p>Username: {{user.username}}</p>
+        <p>Email: {{user.email}}</p>
+        <p>Joined: {{user.joined_date}}</p>
+        <p>Favorite Professor: Patrick Hill <3</p>
+    </div>
 </div>
