@@ -1,4 +1,3 @@
-{{!-- Current Book --}}
 <div class="current-book">
   <h2>Current Book</h2>
   <div class="book-info">
@@ -10,7 +9,6 @@
   </div>
 </div>
 
-{{!-- Discussions --}}
 <div class="discussions">
   <h2>Discussions</h2>
   
@@ -19,8 +17,6 @@
       <h3>{{book.title}}</h3>
       <p>{{book.author}}</p>
       <p>Created: {{ createdAt}}</p>
-
-      {{!-- Threads --}}
       <div class="threads">
         {{#each threads}}
           <div class="thread">
@@ -43,8 +39,6 @@
               </form>
             {{/if}}
 
-
-            {{!-- Comments --}}
             <div class="comments">
               {{#each comments}}
                 <div class="comment">
@@ -65,7 +59,6 @@
   {{/each}}
 </div>
 
-{{!-- Add Thread Form --}}
 <div class="add-thread">
   <h3>Add a New Thread:</h3>
     <form action="/thread" method="POST" class="comment-form">
