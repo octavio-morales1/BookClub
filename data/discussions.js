@@ -7,6 +7,12 @@ import * as userAPI from './user.js';
 const bookClubCollection = await mongoCollections.books_clubs();
 const bookCollection = await mongoCollections.books();
 
+const getPopularDiscussions = async () => {
+    const discussionCollection = await mongoCollections.discussions();
+    return await discussionCollection.find().sort({participantCount: -1}).limit(5).toArray();
+  };
+
+
 const createDiscussion = async (clubId, bookId) => {
     if (!clubId || typeof clubId !== 'string' || clubId.trim() === "") throw 'Error: user id does not exist or is not a valid string';
     if (!bookId || typeof bookId !== 'string' || bookId.trim().length === 0) throw 'Invalid book key';
@@ -119,4 +125,4 @@ const getThread = async (bookClubId, discussionId, threadId) => {
     return thread;
 };
 
-export { createDiscussion, createThread, commentThread, getThread, updateDiscussionStatus };
+export { getPopularDiscussions, createDiscussion, createThread, commentThread, getThread, updateDiscussionStatus };
