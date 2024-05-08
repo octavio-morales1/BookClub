@@ -1,12 +1,16 @@
-
-
-<h2>Book Clubs</h2>
-{{#each bookClubs}}
-    <div class="book-club">
-        <h3>{{this.name}}</h3>
-        <p>{{this.description}}</p>
-        <a href="/bookclubs/{{this._id}}">View Club</a>
+<div class="container">
+    <h1>Book Clubs</h1>
+    {{#if bookClubs.length}}
+    <div class="book-clubs-list">
+        {{#each bookClubs}}
+        <div class="book-club">
+            <h2>{{this.name}}</h2>
+            <p>{{this.description}}</p>
+            <a href="/bookclubs/{{this._id}}" class="view-club-btn">View Club</a>
+        </div>
+        {{/each}}
     </div>
-{{else}}
+    {{else}}
     <p>No book clubs found. Consider starting one by searching for a book!</p>
-{{/each}}
+    {{/if}}
+</div>
