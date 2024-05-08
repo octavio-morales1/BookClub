@@ -1,19 +1,14 @@
-
-
-
 <h1>Book List</h1>
-<h2>Results for: {{searchTerm}}</h3>
+<h2>Results for: {{searchTerm}}</h2>
 <a href="/">Search</a>
 
-<ul>
+<div class="book-listing">
   {{#each books}}
-  <li>
-    <a class="book-link" href="/book{{this._id}}">
-      <h3>{{this.title}}</h3>
-      {{#if this.img}}
-      <img src="{{this.img}}" alt="Book Cover">
-      {{/if}}
-    </a>
-  </li>
+    <div class="book">
+      <a href="/book{{this._id}}" class="book-link">
+        <img src="{{#if this.img}}{{this.img}}{{else}}../public/no_image.jpg{{/if}}" alt="Book Cover" class="book-image">
+        <h3>{{this.title}}</h3>
+      </a>
+    </div>
   {{/each}}
-</ul>
+</div>
