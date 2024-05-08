@@ -1,58 +1,40 @@
-<h1>Book Details</h1>
-<div class="book-card">
-    {{#if book.img}}
-    <img src="{{book.img}}" alt="{{book.title}}" class="book-image">
-    {{/if}}
-    <h3>{{book.title}}</h3>
-    {{#if book.author}}
-    <p>by {{book.author}}</p>
-    {{/if}}
-    {{#if book.publishedDate}}
-    <p>Published: {{book.publishedDate}}</p>
-    {{/if}}
-    {{#if book.genre}}
-    <p>Genre: {{book.genre.join ', '}}</p>  <!-- Assuming genre is an array -->
-    {{/if}}
-    {{#if book.synopsis}}
-    <p>Synopsis: {{book.synopsis}}</p>
-    {{/if}}
-
-    <!-- Reviews Section -->
-    <h3>Reviews</h3>
-    {{#if book.reviews.length}}
-        {{#each book.reviews}}
-            <div class="review">
-                <strong>{{this.user}}</strong> rated this {{this.rating}} stars
-                <p>{{this.comment}}</p>
+<div class="container">
+    <h1>Book Details</h1>
+    <div class="book-details">
+        <div class="book-card">
+            {{#if book.img}}
+            <img src="{{book.img}}" alt="{{book.title}}" class="book-info">
+            {{/if}}
+            <div class="book-info">
+                <h2>{{book.title}}</h2>
+                {{#if book.author}}
+                <p class="author">by {{book.author}}</p>
+                {{/if}}
+                {{#if book.publishedDate}}
+                <p class="published">Published: {{book.publishedDate}}</p>
+                {{/if}}
+                {{#if book.genre}}
+                <p class="genre">Genre: {{book.genre.join ', '}}</p>
+                {{/if}}
+                {{#if book.synopsis}}
+                <p class="synopsis">Synopsis: {{book.synopsis}}</p>
+                {{/if}}
             </div>
-        {{/each}}
-    {{else}}
-        <p>No reviews yet.</p>
-    {{/if}}
-
-    <!-- Review Submission Form -->
-    <form action="/books{{book._id}}/reviews" method="POST" class="review-form">
-        <textarea name="comment" required placeholder="Write your review"></textarea>
-        <input type="number" name="rating" min="1" max="5" required>
-        <button type="submit">Submit Review</button>
-    </form>
-
-    <!-- Create Book Club Form -->
-    <form action="/bookclubs/works/{{id}}/create" method="POST" class="book-club-form">
-        <input type="hidden" name="bookId" value="{{id}}">
-        <input type="text" name="clubName" placeholder="Enter club name" required>
-        <input type="text" name="description" placeholder="Describe Book Club" required>
-        <button type="submit">Create Book Club</button>
-    </form>
-
-    <!-- Recommendations Section (Optional: If you implement a recommendations feature) -->
-    <h3>Recommended Books</h3>
-    <div class="recommendations">
-        {{#each recommendations}}
-            <div class="recommended-book">
-                <img src="{{this.img}}" alt="{{this.title}}">
-                <p>{{this.title}} by {{this.author}}</p>
-            </div>
-        {{/each}}
+        </div>
+        <div class="book-club-form-container">
+            <h2>Create a Book Club</h2>
+            <form action="/bookclubs/works/{{id}}/create" method="POST" class="book-club-form">
+                <input type="hidden" name="bookId" value="{{id}}">
+                <div class="form-group">
+                    <input type="text" name="clubName" placeholder="Enter club name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="description" placeholder="Describe Book Club" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Create Book Club</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
